@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<!-- ═══════════════════════════════════════════════════════════════════════
+  ТРЕНАЖЁР · ЗАМЕР ТЕМПЕРАТУРЫ ГОВЯДИНЫ
+  Собран на дизайн-системе KU (kuds-ds) по сценарию методиста
+  «тренажер-замер говядины (1).docx». Курс = один index.html, всё локально.
+
+  ГРАФИКА
+  • Фотографии из материалов методиста лежат в assets/ (говорящие имена).
+  • Там, где исходной графики НЕТ, стоит ЗАГЛУШКА .zb-ph с промтом внутри
+    атрибута data-gen-prompt. Полный список — в PROMPTS.md.
+    Чтобы заглушка стала картинкой: сгенерируй файл по промту и положи его
+    по пути из data-gen-file — разметку менять не нужно.
+
+  МЕХАНИКИ (свой JS внизу файла, префикс zb-)
+  • zbCheck(id)       — тест с кнопкой «Ответить»: один или несколько ответов
+  • zbCheckSort(id)   — последовательность шагов (на .ku-sortable ДС)
+  • zbCheckZones(id)  — сортировка по двум корзинам (на [data-ku-dnd] ДС)
+  • data-zb-next      — пошаговое раскрытие блоков внутри главы
+  Тексты обратной связи живут рядом с вопросом в <template data-fb-ok|bad>.
+═══════════════════════════════════════════════════════════════════════ -->
+<html lang="ru" data-audience="ms" data-direction="produkty" data-ku-course="ku-zamer-govyadiny">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Замер температуры говядины</title>
+  <link rel="stylesheet" href="css/kuds.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" /></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978" /> <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978" /> <path d="M18 9h1.5a1 1 0 0 0 0-5H18" /> <path d="M4 22h16" /> <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" /> <path d="M6 9H4.5a1 1 0 0 1 0-5H6" /></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="m9 14 2 2 4-4" /></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M11 14h2a2 2 0 0 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16" /> <path d="m14.45 13.39 5.05-4.694C20.196 8 21 6.85 21 5.75a2.75 2.75 0 0 0-4.797-1.837.276.276 0 0 1-.406 0A2.75 2.75 0 0 0 11 5.75c0 1.2.802 2.248 1.5 2.946L16 11.95" /> <path d="m2 15 6 6" /> <path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91" /></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M13 5h8" /> <path d="M13 12h8" /> <path d="M13 19h8" /> <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="12" r="1" /> <circle cx="9" cy="5" r="1" /> <circle cx="9" cy="19" r="1" /> <circle cx="15" cy="12" r="1" /> <circle cx="15" cy="5" r="1" /> <circle cx="15" cy="19" r="1" /></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" /></symbol>
+  <symbol id="i-no" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m15 9-6 6" /> <path d="m9 9 6 6" /></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol>
+  <symbol id="i-utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" /> <path d="M7 2v20" /> <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" /></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 2v20" /> <path d="m15 19-3 3-3-3" /> <path d="m19 9 3 3-3 3" /> <path d="M2 12h20" /> <path d="m5 9-3 3 3 3" /> <path d="m9 5 3-3 3 3" /></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526" /> <circle cx="12" cy="8" r="6" /></symbol>
+</defs></svg>
+
+<style>
+/* ════════════════════════════════════════════════════════════════════════
+   Собственные элементы тренажёра. Правило ДС: только токены --ku-* и
+   словарь состояний (.correct / .wrong / .is-done / .dragging).
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Шаг сценария (раскрывается кнопкой data-zb-next) ─────────────────── */
+.zb-step[hidden] { display: none; }
+
+/* ── Варианты-картинки: инвентарь, котлеты, положение щупа ────────────── */
+.zb-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr)); gap: var(--ku-space-s); }
+.zb-picks.l { grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); }
+
+.zb-pick {
+  position: relative;
+  display: flex; flex-direction: column; gap: 0.5em;
+  height: 100%;                     /* ряд выравнивается по самой высокой */
+  width: 100%; padding: var(--ku-space-2xs);
+  background: var(--ku-card);
+  border: var(--ku-border-w-2) solid var(--ku-border);
+  border-radius: var(--ku-radius-l);
+  box-shadow: var(--ku-shadow-xs);
+  cursor: pointer; text-align: center;
+  transition: border-color var(--ku-dur-fast) var(--ku-ease),
+              box-shadow var(--ku-dur-fast) var(--ku-ease),
+              transform var(--ku-dur-fast) var(--ku-ease-out);
+}
+.zb-pick img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; border-radius: var(--ku-radius-m); background: var(--ku-surface); }
+/* Крупные варианты (котлеты, положение щупа) — contain: кадрирование
+   съело бы именно ту деталь, по которой ученик выбирает ответ */
+.zb-picks.l .zb-pick img { aspect-ratio: 4 / 3; object-fit: contain; }
+.zb-pick__name { margin-top: auto; font-size: 0.82rem; line-height: 1.3; color: var(--ku-text-soft); padding: 0 0.4em 0.4em; }
+.zb-pick:hover:not(:disabled) { transform: translateY(-3px); box-shadow: var(--ku-shadow-s); border-color: color-mix(in srgb, var(--ku-brand) 55%, var(--ku-border)); }
+.zb-pick:disabled { cursor: default; }
+.zb-pick.is-picked { border-color: var(--ku-info); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ku-info) 22%, transparent); }
+.zb-pick.correct   { border-color: var(--ku-success); background: var(--ku-success-soft); }
+.zb-pick.wrong     { border-color: var(--ku-danger);  background: var(--ku-danger-soft); }
+.zb-pick__mark {
+  display: none;
+  position: absolute; top: 0.6em; right: 0.6em;
+  width: 1.7em; height: 1.7em;
+  place-items: center;
+  border-radius: var(--ku-radius-pill);
+  color: #fff; box-shadow: var(--ku-shadow-s);
+}
+.zb-pick.correct .zb-pick__mark, .zb-pick.wrong .zb-pick__mark { display: grid; }
+.zb-pick.correct .zb-pick__mark { background: var(--ku-success); }
+.zb-pick.wrong   .zb-pick__mark { background: var(--ku-danger); }
+
+/* ── Текстовый вариант ответа (свой, чтобы работала кнопка «Ответить») ── */
+.zb-opts { display: grid; gap: var(--ku-space-2xs); }
+.zb-opt {
+  display: flex; align-items: center; gap: 0.7em;
+  width: 100%; text-align: left;
+  background: var(--ku-card);
+  border: var(--ku-border-w-2) solid var(--ku-border);
+  border-radius: var(--ku-radius-m);
+  padding: 0.85em 1em;
+  font-size: 0.95rem; line-height: 1.45; color: var(--ku-text);
+  cursor: pointer;
+  transition: border-color var(--ku-dur-fast) var(--ku-ease),
+              background-color var(--ku-dur-fast) var(--ku-ease),
+              transform var(--ku-dur-fast) var(--ku-ease-out);
+}
+.zb-opt:hover:not(:disabled) { border-color: color-mix(in srgb, var(--ku-brand) 55%, var(--ku-border)); transform: translateX(3px); }
+.zb-opt:disabled { cursor: default; }
+.zb-opt__box {
+  flex-shrink: 0; width: 1.5em; height: 1.5em;
+  display: grid; place-items: center;
+  border: var(--ku-border-w-2) solid var(--ku-border);
+  border-radius: var(--ku-radius-pill);
+  color: transparent;
+  transition: border-color var(--ku-dur-fast) var(--ku-ease), background-color var(--ku-dur-fast) var(--ku-ease);
+}
+.zb-opts[data-mode="multi"] .zb-opt__box { border-radius: var(--ku-radius-s); }
+.zb-opt.is-picked { border-color: var(--ku-info); background: var(--ku-info-soft); }
+.zb-opt.is-picked .zb-opt__box { border-color: var(--ku-info); background: var(--ku-info); color: #fff; }
+.zb-opt.correct { border-color: var(--ku-success); background: var(--ku-success-soft); }
+.zb-opt.correct .zb-opt__box { border-color: var(--ku-success); background: var(--ku-success); color: #fff; }
+.zb-opt.wrong { border-color: var(--ku-danger); background: var(--ku-danger-soft); }
+.zb-opt.wrong .zb-opt__box { border-color: var(--ku-danger); background: var(--ku-danger); color: #fff; }
+
+/* ── Фидбэк: .ku-feedback это flex, текст должен быть одним узлом ─────── */
+.ku-feedback .ku-fb-msg { flex: 1; min-width: 0; }
+.ku-feedback .ku-ico { flex-shrink: 0; }
+
+/* ── Разбор «крупно» после ответа ─────────────────────────────────────── */
+.zb-zoom__label {
+  display: inline-flex; align-items: center; gap: 0.5em;
+  font-weight: 700; font-size: 0.72rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ku-brand);
+  margin-bottom: var(--ku-space-2xs);
+}
+.zb-zoom__img { display: block; width: 100%; border-radius: var(--ku-radius-m); }
+
+/* ── Строка действий упражнения ───────────────────────────────────────── */
+.zb-actions { display: flex; flex-wrap: wrap; gap: var(--ku-space-2xs); align-items: center; margin-top: var(--ku-space-s); }
+.zb-hint { font-size: 0.85rem; color: var(--ku-text-muted); }
+
+/* ── Разбор «крупно» после ответа ─────────────────────────────────────── */
+.zb-zoom[hidden] { display: none; }
+
+/* ── Карточка-перевёртыш (схема бройлеров) ────────────────────────────── */
+.zb-flip { perspective: 1200px; background: none; border: 0; padding: 0; width: 100%; cursor: pointer; }
+.zb-flip__inner {
+  position: relative; transform-style: preserve-3d;
+  transition: transform var(--ku-dur-slow) var(--ku-ease-spring);
+}
+.zb-flip[aria-pressed="true"] .zb-flip__inner { transform: rotateY(180deg); }
+.zb-flip__face {
+  border-radius: var(--ku-radius-l); overflow: hidden;
+  border: 1px solid var(--ku-border); background: var(--ku-card);
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.zb-flip__face.back { position: absolute; inset: 0; transform: rotateY(180deg); display: grid; place-items: center; padding: var(--ku-space-s); }
+.zb-flip__face img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* ── Заглушка графики (промт внутри data-gen-prompt) ──────────────────── */
+.zb-ph { border: 1.5px dashed color-mix(in srgb, var(--ku-brand) 45%, var(--ku-border)); }
+.zb-ph .ku-img__ph { background: var(--ku-brand-soft); gap: 0.35em; }
+.zb-ph .ku-img__ph b { color: var(--ku-text); font-size: 0.9rem; }
+.zb-ph .ku-img__ph span { max-width: 34ch; line-height: 1.4; }
+
+/* ── Крупная модалка (дисклеймеры «сделай скриншот») ──────────────────── */
+.zb-modal-wide { max-width: 46rem; max-height: 88vh; overflow-y: auto; }
+@media (max-width: 640px) {
+  .zb-modal-wide { padding: var(--ku-space-m) var(--ku-space-s) var(--ku-space-s); }
+  .zb-modal-wide .zb-rule { padding: var(--ku-space-2xs); gap: var(--ku-space-2xs); }
+  .zb-modal-wide .ku-icon-badge { width: 2.4em; height: 2.4em; }
+}
+
+/* ── Памятка: картинка целиком, кликом открывается крупно ─────────────── */
+.zb-doc { display: block; width: 100%; background: var(--ku-card); border: 1px solid var(--ku-border); border-radius: var(--ku-radius-l); overflow: hidden; cursor: zoom-in; box-shadow: var(--ku-shadow-xs); }
+.zb-doc img { display: block; width: 100%; }
+
+/* ── Строка-правило: иконка слева, заголовок и пояснение справа ───────── */
+.zb-rule {
+  display: flex; align-items: flex-start; gap: var(--ku-space-s);
+  background: var(--ku-surface);
+  border: 1px solid var(--ku-border-soft);
+  border-radius: var(--ku-radius-l);
+  padding: var(--ku-space-s);
+}
+.zb-rule > .ku-icon-badge { flex-shrink: 0; }   /* иначе жетон сплющивается */
+.zb-rule__title { font-weight: 600; line-height: 1.35; }
+.zb-rule__sub { font-size: 0.88rem; color: var(--ku-text-soft); line-height: 1.45; margin-top: 0.25em; }
+
+/* ── Состояния, которых нет в ДС: результат сортировки и распределения ── */
+.ku-sort-item.correct { border-color: var(--ku-success); background: var(--ku-success-soft); }
+.ku-chip.correct { border-color: var(--ku-success); background: var(--ku-success-soft); }
+.ku-chip.wrong   { border-color: var(--ku-danger);  background: var(--ku-danger-soft); }
+
+/* ── Плитка ситуации ──────────────────────────────────────────────────── */
+.zb-case { border-left: 4px solid var(--ku-brand); }
+
+@media (max-width: 640px) {
+  .zb-picks { grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); }
+  .zb-picks.l { grid-template-columns: 1fr; }
+}
+</style>
+
+<!-- ═══ ШАПКА С ПРОГРЕССОМ ═══ -->
+<header class="ku-topbar">
+  <div class="ku-topbar__inner">
+    <span class="ku-topbar__brand"><svg class="ku-ico"><use href="#i-flame"/></svg> Замер температуры говядины</span>
+    <div class="ku-topbar__spacer"></div>
+    <span class="ku-progress__count" id="ku-course-count"></span>
+  </div>
+  <div class="ku-progress"><div class="ku-progress__bar" id="ku-course-bar"></div></div>
+</header>
+
+<main data-ku-course-nav data-ku-chapters="ch1,ch2,ch3,ch4,ch5,ch6,ch7,ch8">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ОБЛОЖКА · ИНСТРУКЦИЯ · МАТЕРИАЛЫ · ОГЛАВЛЕНИЕ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page active" id="ku-page-home">
+
+    <section class="ku-section" style="background:var(--ku-grad-brand-soft);position:relative;overflow:hidden">
+      <span class="ku-bk-logo" role="img" aria-label="Burger King"></span>
+      <div class="ku-wrap">
+        <div class="ku-hero-row">
+          <div>
+            <span class="ku-eyebrow">Тренажёр · Обучение МС</span>
+            <div class="ku-space s"></div>
+            <h1 class="ku-display">Замер температуры говядины</h1>
+            <div class="ku-space s"></div>
+            <p class="ku-lead">Ты пройдёшь все этапы замера от начала до конца: подготовка, оборудование, жарка, замер и решения по результату.</p>
+            <div class="ku-space s"></div>
+            <div class="ku-row">
+              <span class="ku-badge"><svg class="ku-ico s"><use href="#i-clock"/></svg> 15 минут</span>
+              <span class="ku-badge neutral">8 глав</span>
+            </div>
+          </div>
+
+          <!-- ЗАГЛУШКА ГРАФИКИ: обложка -->
+          <div class="ku-img zb-ph" style="flex-shrink:0;width:min(100%,24rem)"
+               data-gen-file="assets/gen/hero.jpg"
+               data-gen-prompt="Фотореалистичная горизонтальная иллюстрация 16:10 для обложки обучающего тренажёра сети быстрого питания. Сотрудник ресторана в чёрной форме и сетчатой шапочке-сетке стоит у профессионального конвейерного гриля-бройлера на кухне и держит цифровой термощуп, воткнутый под углом 45° в говяжью котлету, лежащую в янтарной поликарбонатной гастроёмкости. Тёплый свет кухни, неглубокая глубина резкости, фон размыт. Без текста, без логотипов, без брендинга. Руки чистые, форма опрятная.">
+            <img alt="Сотрудник замеряет температуру котлеты" onerror="this.removeAttribute('src')" src="assets/gen/hero.jpg">
+            <div class="ku-img__ph">
+              <svg class="ku-ico l"><use href="#i-image"/></svg>
+              <b>Заглушка: assets/gen/hero.jpg</b>
+              <span>Промт для генерации — в атрибуте data-gen-prompt этого блока</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ku-section tight">
+      <div class="ku-wrap narrow">
+        <div class="ku-callout ku-reveal">
+          <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-bulb"/></svg></span>
+          <div>
+            <div class="ku-callout__title">Как устроен тренажёр</div>
+            <p>Ты научишься правильно готовиться к замеру, выбирать оборудование, ставить мясо в бройлер, измерять температуру и принимать решения по результату. Задания помогут отработать навык до того, как ты применишь его на практике с Наставником.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ku-section tight">
+      <div class="ku-wrap narrow">
+        <h2 class="ku-h2">Материалы для изучения</h2>
+        <p class="ku-small ku-soft">Нажми на памятку, чтобы открыть её крупно.</p>
+        <div class="ku-space s"></div>
+        <div class="ku-grid cols-2 gap-s">
+          <button class="ku-card hover-lift ku-reveal" style="text-align:left" onclick="kuOpenModal('m-pamyatka-ruki')">
+            <div class="ku-icon-badge"><svg class="ku-ico"><use href="#i-hand"/></svg></div>
+            <div class="ku-space s"></div>
+            <h3 class="ku-h3">Памятка «Мытьё рук»</h3>
+            <p class="ku-small ku-soft">Когда и как мыть и дезинфицировать руки на станциях.</p>
+          </button>
+          <button class="ku-card hover-lift ku-reveal" style="--d:1;text-align:left" onclick="kuOpenModal('m-pamyatka-zamer')">
+            <div class="ku-icon-badge"><svg class="ku-ico"><use href="#i-target"/></svg></div>
+            <div class="ku-space s"></div>
+            <h3 class="ku-h3">Памятка «Делай замер правильно»</h3>
+            <p class="ku-small ku-soft">Диапазон 68–75 °C и действия при отклонениях.</p>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="ku-section tight">
+      <div class="ku-wrap narrow">
+        <h2 class="ku-h2">Готов начинать?</h2>
+        <div class="ku-space s"></div>
+        <div class="ku-stack s">
+          <button class="ku-card ku-chapter" id="ku-home-card-1" style="width:100%;text-align:left" onclick="kuNavigate('ch1')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">1</div>
+            <div class="ku-chapter__body"><h3>Введение и готовность к замеру</h3><p>~2 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-2" style="width:100%;text-align:left" onclick="kuNavigate('ch2')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">2</div>
+            <div class="ku-chapter__body"><h3>Этап 1. Подготовка инвентаря</h3><p>~3 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-3" style="width:100%;text-align:left" onclick="kuNavigate('ch3')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">3</div>
+            <div class="ku-chapter__body"><h3>Этап 2. Жарим мясо</h3><p>~2 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-4" style="width:100%;text-align:left" onclick="kuNavigate('ch4')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">4</div>
+            <div class="ku-chapter__body"><h3>Этап 3. Оценка внешнего вида</h3><p>~1 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-5" style="width:100%;text-align:left" onclick="kuNavigate('ch5')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">5</div>
+            <div class="ku-chapter__body"><h3>Этап 4. Замер температуры</h3><p>~4 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-6" style="width:100%;text-align:left" onclick="kuNavigate('ch6')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">6</div>
+            <div class="ku-chapter__body"><h3>Этап 5. Бракераж и журналы</h3><p>~2 мин</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-7" style="width:100%;text-align:left" onclick="kuNavigate('ch7')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">7</div>
+            <div class="ku-chapter__body"><h3>Рабочие ситуации</h3><p>7 кейсов со смены</p></div>
+          </button>
+          <button class="ku-card ku-chapter locked" id="ku-home-card-8" style="width:100%;text-align:left" onclick="kuNavigate('ch8')">
+            <span class="ku-lock-badge"><svg class="ku-ico s"><use href="#i-lock"/></svg></span>
+            <div class="ku-chapter__num">8</div>
+            <div class="ku-chapter__body"><h3>Итоговое задание</h3><p>Вся процедура по порядку</p></div>
+          </button>
+        </div>
+        <div class="ku-space m"></div>
+        <div class="ku-center">
+          <button class="ku-btn primary l" onclick="kuNavigate('ch1')">Конечно! <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 1 · ВВЕДЕНИЕ И ГОТОВНОСТЬ К ЗАМЕРУ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch1">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 1</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Введение и готовность к замеру</h2>
+        <div class="ku-space m"></div>
+
+        <!-- ── шаг 1.1 ─────────────────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s1-1">
+          <div class="ku-prose">
+            <p>Привет! Сегодня ты готовишься замерить мясо.</p>
+          </div>
+          <div class="ku-space s"></div>
+          <div class="ku-callout warning">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-alert"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Важно помнить</div>
+              <p>Замер температуры готовых котлет из говядины — важнейшая ежедневная процедура. Она нужна, чтобы обеспечивать безопасность и качество продукта.</p>
+            </div>
+          </div>
+          <div class="ku-space m"></div>
+          <h3 class="ku-h3">Когда проводится замер</h3>
+          <p class="ku-small ku-soft">Минимум 3 раза в день. Если ресторан открыт после 00:30 — 4 раза.</p>
+          <div class="ku-space s"></div>
+          <div class="ku-timeline">
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>За полчаса до открытия</h4></div>
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>За полчаса до дневного пика</h4></div>
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>За полчаса до вечернего пика</h4></div>
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>До 00:30</h4><p> — если ресторан работает после 00:30</p></div>
+          </div>
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s1-2">Продолжаем! <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── шаг 1.2 ─────────────────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s1-2" hidden>
+          <div class="ku-space m"></div>
+          <h3 class="ku-h2">Перед тем как начать, убедись, что…</h3>
+          <div class="ku-space s"></div>
+          <div class="ku-stack s">
+            <div class="zb-rule">
+              <span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-shield"/></svg></span>
+              <div><div class="zb-rule__title">На тебе надета шапочка</div><div class="zb-rule__sub">Утверждённый головной убор — часть стандарта внешнего вида.</div></div>
+            </div>
+            <div class="zb-rule">
+              <span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-zap"/></svg></span>
+              <div><div class="zb-rule__title">Жарочный шкаф нагрет до 300 ℃ ± 20 ℃</div><div class="zb-rule__sub">При любых отклонениях — заявка в сервисную компанию.</div></div>
+            </div>
+            <div class="zb-rule">
+              <span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-settings"/></svg></span>
+              <div><div class="zb-rule__title">Кондиционер выключен, а термощуп откалиброван</div><div class="zb-rule__sub">Поток холодного воздуха искажает показания.</div></div>
+            </div>
+          </div>
+
+          <div class="ku-space m"></div>
+          <h3 class="ku-h3">Как калибруется термощуп</h3>
+          <div class="ku-space s"></div>
+          <div class="ku-grid cols-2 gap-s">
+            <div class="ku-sortable" style="pointer-events:none">
+              <div class="ku-sort-item"><span class="ku-sort-item__num">1</span>Наполни стакан 0,3 для кофе льдом доверху</div>
+              <div class="ku-sort-item"><span class="ku-sort-item__num">2</span>Налей холодной воды из-под крана</div>
+              <div class="ku-sort-item"><span class="ku-sort-item__num">3</span>Вставь термощуп в воду со льдом</div>
+              <div class="ku-sort-item"><span class="ku-sort-item__num">4</span>Дождись стабилизации температуры</div>
+              <div class="ku-sort-item"><span class="ku-sort-item__num">5</span>Зафиксируй самую низкую температуру: −0,5 ℃ … +0,5 ℃</div>
+            </div>
+
+            <!-- ЗАГЛУШКА ГРАФИКИ: калибровка щупа -->
+            <div class="ku-img zb-ph contain" style="aspect-ratio:3/4"
+                 data-gen-file="assets/gen/calibration.jpg"
+                 data-gen-prompt="Вертикальная фотореалистичная иллюстрация 3:4 без текста: прозрачный пластиковый стакан для кофе объёмом 0,3 л, доверху наполненный кубиками льда и холодной водой, стоит на светлой нержавеющей поверхности кухни ресторана. В воду вертикально вставлен щуп чёрного цифрового термометра-термощупа с проводом; на дисплее видно значение около 0 °C. Съёмка сбоку, чуть выше уровня стакана, мягкий рассеянный свет, чистый нейтральный фон. Без логотипов и брендинга.">
+              <img alt="Калибровка термощупа в стакане с ледяной водой" onerror="this.removeAttribute('src')" src="assets/gen/calibration.jpg">
+              <div class="ku-img__ph">
+                <svg class="ku-ico l"><use href="#i-image"/></svg>
+                <b>Заглушка: assets/gen/calibration.jpg</b>
+                <span>Промт для генерации — в атрибуте data-gen-prompt этого блока</span>
+              </div>
+            </div>
+          </div>
+          <div class="ku-space s"></div>
+          <div class="ku-callout info">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-info"/></svg></span>
+            <div><div class="ku-callout__title">Это покажет Наставник</div><p>Калибровку термощупа ты отработаешь на практике вместе с Наставником.</p></div>
+          </div>
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s1-3">Продолжаем! <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── шаг 1.3 ─────────────────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s1-3" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-callout success">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-hand"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Самый первый шаг — помой и продезинфицируй руки</div>
+              <p>Открой памятку и вспомни порядок действий: температура воды 38–55 ℃, антибактериальное мыло, полное высыхание дезинфектора.</p>
+            </div>
+          </div>
+          <div class="ku-space s"></div>
+          <button class="zb-doc" onclick="kuOpenModal('m-pamyatka-ruki')" aria-label="Открыть памятку «Мытьё рук» крупно">
+            <img src="assets/pamyatka-ruki.jpg" alt="Памятка «Мытьё рук»: температура воды 38–55 ℃, шесть шагов мытья и правила дезинфекции при смене станций" loading="lazy">
+          </button>
+          <div class="zb-actions"><button class="ku-btn primary l" onclick="kuNavigate('ch2')">Продолжаем! <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 2 · ЭТАП 1. ПОДГОТОВКА
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch2">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 2 · Этап 1</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Подготовка</h2>
+        <div class="ku-space m"></div>
+
+        <!-- ── 2.1 Выбор инвентаря ─────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s2-1">
+          <div class="ku-prose"><p>Руки помыты. Теперь твоя задача — подготовить весь необходимый инвентарь.</p></div>
+          <div class="ku-space m"></div>
+
+          <div class="ku-exercise" data-ku-id="ch2-inventar">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-list"/></svg> Выбери инвентарь</div>
+            <p class="ku-small ku-soft">Отметь только те предметы, которые понадобятся для замера. Можно выбрать несколько.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-inventar" data-mode="multi" data-reveal="all"
+                 data-correct="salfetki,pen,shipcy-red,shchup,shapochka,sekundomer">
+              <div class="zb-picks" data-zb-shuffle>
+                <button class="zb-pick" data-i="salfetki">
+                  <img src="assets/inv-salfetki.jpg" alt="Две упаковки спиртовых салфеток" loading="lazy">
+                  <span class="zb-pick__name">Спиртовые салфетки <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="pen">
+                  <img src="assets/inv-pen.jpg" alt="Янтарная поликарбонатная гастроёмкость (пен)" loading="lazy">
+                  <span class="zb-pick__name">Янтарный пен <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="shipcy-red">
+                  <img src="assets/inv-shipcy-red.jpg" alt="Металлические щипцы с красными ручками" loading="lazy">
+                  <span class="zb-pick__name">Красные щипцы <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="shchup">
+                  <img src="assets/inv-termoshchup.jpg" alt="Цифровой термощуп Atkins в чехле" loading="lazy">
+                  <span class="zb-pick__name">Термощуп <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="shapochka">
+                  <img src="assets/inv-shapochka.jpg" alt="Одноразовая шапочка-сетка" loading="lazy">
+                  <span class="zb-pick__name">Шапочка-сетка <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="sekundomer">
+                  <img src="assets/inv-sekundomer.jpg" alt="Электронный секундомер на шнурке" loading="lazy">
+                  <span class="zb-pick__name">Секундомер <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="shipcy-blue">
+                  <img src="assets/inv-shipcy-blue.jpg" alt="Металлические щипцы с синими ручками" loading="lazy">
+                  <span class="zb-pick__name">Синие щипцы <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="fartuk">
+                  <img src="assets/inv-fartuk.jpg" alt="Форменный фартук" loading="lazy">
+                  <span class="zb-pick__name">Фартук <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="perchatki">
+                  <img src="assets/inv-perchatki.jpg" alt="Синие одноразовые перчатки" loading="lazy">
+                  <span class="zb-pick__name">Перчатки <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="maska">
+                  <img src="assets/inv-maska.jpg" alt="Одноразовая медицинская маска" loading="lazy">
+                  <span class="zb-pick__name">Маска <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+              </div>
+
+              <template data-fb-ok><strong>Верно!</strong> Ты выбрал все необходимые предметы. Спиртовая салфетка для обработки щупа, откалиброванный термощуп, щипцы для готового мяса, чистый сухой пен, шапочка и секундомер — это полный набор для правильного замера. Фартук не обязателен для этой процедуры.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> Ты выбрал не все предметы или добавил лишние. Верный набор: спиртовая салфетка для обработки щупа, откалиброванный термощуп, щипцы для готового мяса, чистый сухой пен, шапочка и секундомер.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-inventar')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s2-2">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2.2 Куда положить инвентарь ─────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s2-2" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Ты подготовил инвентарь: откалиброванный щуп, чистый и сухой пен, спиртовые салфетки и секундомер.</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch2-poverhnost">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-target"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Куда нужно положить предметы, чтобы сделать верный замер? Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-poverhnost" data-mode="single" data-correct="2">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> На поверхность жарочного шкафа, чтобы всё было под рукой</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> На чистую неподогреваемую поверхность комнатной температуры — например, станция препорейшн или свободный борт</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> На подогреваемый борт, чтобы мясо не остыло</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> На трёхсекционную мойку, чтобы сразу помыть пен</button>
+              </div>
+              <template data-fb-ok><strong>Совершенно верно!</strong> Весь подготовленный инвентарь должен лежать на чистой сухой поверхности комнатной температуры. Это позволит увидеть правильную температуру.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> Горячая поверхность покажет неверную температуру, а возле жарочного шкафа и на мойке есть риск перекрёстного загрязнения. Весь подготовленный инвентарь должен лежать на чистой сухой поверхности комнатной температуры.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-poverhnost')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s2-3">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2.3 Обработка щупа ──────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s2-3" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Следующий важный шаг — подготовить термощуп к работе.</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch2-obrabotka-shchupa">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-shield"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Как ты будешь готовить щуп? Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-shchup" data-mode="single" data-correct="3">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Проткну упаковку с салфеткой остриём щупа и оставлю так на 10 секунд</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Опущу щуп в дезинфицирующий раствор на 15 секунд</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Тщательно протру весь щуп спиртовой салфеткой и положу так, чтобы острый конец ничего не касался</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Протру щуп салфеткой, смоченной в дезинфекторе для рук</button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> Щуп обрабатывают спиртовой салфеткой от наконечника до основания. После обработки положи его так, чтобы чистый наконечник не касался поверхностей.</template>
+              <template data-fb-bad><strong>Это ошибка!</strong> Влажные салфетки, дезинфектор для рук и дезинфицирующий раствор не подходят для обработки щупа, а проткнуть упаковку щупом — неэффективно. Обработай щуп спиртовой салфеткой от наконечника до основания и положи так, чтобы чистый наконечник не касался поверхностей.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-shchup')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s2-4">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2.4 Салфетки закончились ────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s2-4" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Теперь ты знаешь, что обрабатывать щуп нужно спиртовой салфеткой. Но что делать, если салфетки закончились?</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch2-net-salfetok">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-refresh"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-net-salfetok" data-mode="single" data-correct="3">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отложу замер до тех пор, пока не приедет поставка с салфетками</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Протру щуп влажной салфеткой для рук</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Обработаю щуп методом трёх ванн: вымыть — ополоснуть — продезинфицировать — ополоснуть</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Обработаю щуп дезинфектором для рук и подожду, пока высохнет</button>
+              </div>
+              <template data-fb-ok><strong>Верно!</strong> Если спиртовые салфетки закончились, допускается обработка щупа методом трёх ванн.</template>
+              <template data-fb-bad><strong>Неверно!</strong> Если спиртовые салфетки закончились, допускается обработка щупа методом трёх ванн. Все остальные способы не обеспечивают безопасность.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-net-salfetok')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('ch3')">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+
+          <div class="ku-space m"></div>
+          <!-- ЗАГЛУШКА ГРАФИКИ: метод трёх ванн -->
+          <div class="ku-img zb-ph" style="aspect-ratio:16/9"
+               data-gen-file="assets/gen/three-sink.jpg"
+               data-gen-prompt="Горизонтальная фотореалистичная иллюстрация 16:9 без текста: трёхсекционная профессиональная мойка из нержавеющей стали на кухне ресторана быстрого питания, снятая сверху под углом 30°. Три секции наглядно различаются: первая с мыльной пеной, вторая с чистой прозрачной водой, третья с прозрачным дезинфицирующим раствором. Рядом на бортике лежат чистые красные щипцы и янтарная гастроёмкость. Ровный холодный свет, чистая кухня, без людей, без текста и надписей, без логотипов.">
+            <img alt="Трёхсекционная мойка: мытьё, ополаскивание, дезинфекция" onerror="this.removeAttribute('src')" src="assets/gen/three-sink.jpg">
+            <div class="ku-img__ph">
+              <svg class="ku-ico l"><use href="#i-image"/></svg>
+              <b>Заглушка: assets/gen/three-sink.jpg</b>
+              <span>Промт для генерации — в атрибуте data-gen-prompt этого блока</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 3 · ЭТАП 2. ЖАРИМ МЯСО
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch3" data-zb-modal-on-enter="m-oborudovanie">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 3 · Этап 2</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Жарим мясо</h2>
+        <div class="ku-space m"></div>
+
+        <!-- ── 3.1 Требования к оборудованию ───────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s3-1">
+          <div class="ku-callout warning">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-alert"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Требования к оборудованию — сделай скриншот и запомни</div>
+              <p>Дисклеймер открылся при входе в главу. Если закрыл — открой ещё раз кнопкой ниже.</p>
+            </div>
+          </div>
+          <div class="ku-space s"></div>
+          <button class="ku-btn soft" onclick="kuOpenModal('m-oborudovanie')"><svg class="ku-ico"><use href="#i-eye"/></svg> Открыть требования</button>
+
+          <div class="ku-space m"></div>
+          <h3 class="ku-h3">Куда закладывать мясо</h3>
+          <p class="ku-small ku-soft">Нажми на карточку, чтобы перевернуть её и увидеть схему.</p>
+          <div class="ku-space s"></div>
+
+          <button class="zb-flip" id="flip-broiler" aria-pressed="false" onclick="zbFlip(this)">
+            <div class="zb-flip__inner" style="aspect-ratio:4/3">
+              <div class="zb-flip__face front" style="height:100%;display:grid;place-content:center;gap:0.6em;padding:var(--ku-space-m);text-align:left">
+                <div class="ku-icon-badge solid" style="margin-inline:auto"><svg class="ku-ico"><use href="#i-layers"/></svg></div>
+                <p class="ku-small ku-soft" style="text-align:center">Часть бройлера, в которую нужно заложить мясо</p>
+                <div class="ku-stack s">
+                  <div><strong>NIECO:</strong> газовый — к краю, электрический — к центру</div>
+                  <div><strong>DUKE:</strong> газовый — к левому краю, электрический — к правому краю</div>
+                </div>
+                <p class="ku-caption" style="text-align:center">Нажми, чтобы посмотреть схему</p>
+              </div>
+              <div class="zb-flip__face back">
+                <img src="assets/broiler-zones.jpg" alt="Схема закладки мяса в бройлеры NIECO и DUKE: газовый и электрический варианты" loading="lazy">
+              </div>
+            </div>
+          </button>
+
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s3-2">Продолжаем! <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── 3.2 Мыть ли руки снова ──────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s3-2" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Ты готов к жарке мяса. Как думаешь, нужно ли снова помыть руки?</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch3-ruki-pered-zharkoy">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-hand"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-ruki-pered" data-mode="single" data-correct="1">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Да, конечно</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Нет, я уже мыл руки в начале, этого достаточно</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Нет, достаточно надеть перчатки</button>
+              </div>
+              <template data-fb-ok><strong>Всё верно!</strong> Руки нужно обязательно помыть ещё раз.</template>
+              <template data-fb-bad><strong>Неверно!</strong> Руки нужно обязательно помыть ещё раз. Перчатки при замере мяса не используются.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-ruki-pered')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s3-3">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 3.3 Как ставить мясо ────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s3-3" hidden>
+          <div class="ku-space m"></div>
+          <h3 class="ku-h2">Приступаем к приготовлению</h3>
+          <div class="ku-space s"></div>
+          <div class="ku-timeline">
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>Убедись, что оборудование нагрелось</h4><p> до нужной температуры</p></div>
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>Определи сторону</h4><p>, на которой выставлены настройки для нужного мяса</p></div>
+            <div class="ku-tl-item"><span class="ku-tl-item__dot"></span><h4>Положи мясо металлическими щипцами Lift-and-grip</h4><p> в нужное отделение</p></div>
+          </div>
+          <div class="ku-space m"></div>
+
+          <div class="ku-grid cols-2 gap-s">
+            <div class="ku-card">
+              <div class="ku-exercise__label">Замер перед пиком — ставь партию</div>
+              <div class="ku-space s"></div>
+              <table class="ku-table">
+                <tbody>
+                  <tr><td>Гамбургер</td><td><strong>12 штук</strong></td></tr>
+                  <tr><td>Воппер</td><td><strong>8 штук</strong></td></tr>
+                  <tr><td>Ангус</td><td><strong>6 штук</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="ku-card">
+              <div class="ku-exercise__label">Пика нет</div>
+              <div class="ku-space s"></div>
+              <p>Ставь жариться <strong>одну котлету</strong>.</p>
+            </div>
+          </div>
+
+          <div class="ku-space m"></div>
+          <!-- ЗАГЛУШКА ГРАФИКИ: закладка котлет в бройлер -->
+          <div class="ku-img zb-ph" style="aspect-ratio:16/9"
+               data-gen-file="assets/gen/broiler-load.jpg"
+               data-gen-prompt="Горизонтальная фотореалистичная иллюстрация 16:9 без текста: руки сотрудника ресторана быстрого питания в чёрной форме (без перчаток, руки чистые) кладут сырую замороженную говяжью котлету на ленту профессионального конвейерного гриля-бройлера из нержавеющей стали, используя металлические щипцы типа lift-and-grip. На ленте уже ровно разложено несколько котлет в один слой без нахлёста. Съёмка сбоку под небольшим углом, тёплый свет кухни, видно раскалённые элементы гриля. Без текста, без надписей на оборудовании, без логотипов.">
+            <img alt="Закладка котлет в бройлер щипцами lift-and-grip" onerror="this.removeAttribute('src')" src="assets/gen/broiler-load.jpg">
+            <div class="ku-img__ph">
+              <svg class="ku-ico l"><use href="#i-image"/></svg>
+              <b>Заглушка: assets/gen/broiler-load.jpg</b>
+              <span>Промт для генерации — в атрибуте data-gen-prompt этого блока</span>
+            </div>
+          </div>
+
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s3-4">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── 3.4 Что делать после закладки ───────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s3-4" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Ты положил мясо в жарочный шкаф. Что нужно сделать дальше?</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch3-posle-zakladki">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-shield"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-posle-zakladki" data-mode="single" data-correct="3">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Пока ждёшь, можно помогать на сборке</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Пойти мыть пен для замера</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Вымыть и продезинфицировать руки</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Выключить кондиционер</button>
+              </div>
+              <template data-fb-ok><strong>Совершенно верно!</strong> После контакта с сырым мясом необходимо немедленно вымыть руки — это важно, чтобы избежать перекрёстного загрязнения. Помни, что стандарт по этой процедуре нужно выполнять всегда.</template>
+              <template data-fb-bad><strong>Это серьёзная ошибка!</strong> После контакта с сырым мясом необходимо немедленно вымыть руки, чтобы избежать перекрёстного загрязнения. Все подготовительные действия ты должен был сделать на этапе подготовки.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-posle-zakladki')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('ch4')">Давай дальше <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 4 · ЭТАП 3. ОЦЕНКА ВНЕШНЕГО ВИДА
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch4">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 4 · Этап 3</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Оценка внешнего вида мяса</h2>
+        <div class="ku-space m"></div>
+
+        <div class="zb-step ku-reveal" id="s4-1">
+          <div class="ku-prose"><p>Мясо приготовилось, и ты достал его из жарочного шкафа. Перед тем как замерить температуру, нужно оценить внешний вид котлеты.</p></div>
+          <div class="ku-space m"></div>
+
+          <div class="ku-exercise" data-ku-id="ch4-vneshniy-vid">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-eye"/></svg> Выбери варианты</div>
+            <p class="ku-small ku-soft">Выбери котлеты, которые ты <strong>не будешь</strong> использовать для замера. Можно выбрать несколько.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-kotlety" data-mode="multi" data-correct="1,2,3">
+              <div class="zb-picks l">
+                <button class="zb-pick" data-i="1">
+                  <img src="assets/patty-raw.jpg" alt="Вариант 1" loading="lazy">
+                  <span class="zb-pick__name">Вариант 1 <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="2">
+                  <img src="assets/patty-dry.jpg" alt="Вариант 2" loading="lazy">
+                  <span class="zb-pick__name">Вариант 2 <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="3">
+                  <img src="assets/patty-torn.jpg" alt="Вариант 3" loading="lazy">
+                  <span class="zb-pick__name">Вариант 3 <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="4">
+                  <img src="assets/patty-good.jpg" alt="Вариант 4" loading="lazy">
+                  <span class="zb-pick__name">Вариант 4 <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> Оценка внешнего вида — важный этап замера. Убедись, что котлета прожарена полностью, не сухая и не повреждена. Только после этого можно проводить замер.</template>
+              <template data-fb-bad><strong>Неправильно!</strong> Оценка внешнего вида — важный этап замера. Если внешний вид котлеты тебя не устраивает, её нужно списать до замера.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-kotlety')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+
+            <!-- Разбор: правильная котлета крупно (показывается после ответа) -->
+            <div class="zb-zoom" data-zb-zoom-for="q-kotlety" hidden>
+              <div class="ku-space m"></div>
+              <div class="ku-card pad-l">
+                <div class="zb-zoom__label"><svg class="ku-ico s"><use href="#i-ok"/></svg> Вот такую котлету можно замерять</div>
+                <div class="ku-space s"></div>
+                <img class="zb-zoom__img" src="assets/patty-good.jpg" alt="Правильно прожаренная котлета с чёткими полосками от гриля, не сухая и не повреждённая" loading="lazy">
+                <div class="ku-space s"></div>
+                <ul class="ku-prose">
+                  <li>Прожарена полностью — нет розовых и сырых участков</li>
+                  <li>Не сухая — поверхность не растрескавшаяся и не крошится</li>
+                  <li>Целая — без разрывов и отломанных краёв</li>
+                  <li>Чёткие полоски от гриля — между ними ты и воткнёшь щуп</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('ch5')">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 5 · ЭТАП 4. ЗАМЕР ТЕМПЕРАТУРЫ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch5">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 5 · Этап 4</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Замер температуры говядины</h2>
+        <div class="ku-space m"></div>
+
+        <!-- ── 5.1 Положение щупа ──────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-1">
+          <div class="ku-prose"><p>Ты верно оценил внешний вид котлеты и убедился в её качестве и безопасности. Теперь приступай к замеру.</p></div>
+          <div class="ku-space m"></div>
+
+          <div class="ku-exercise" data-ku-id="ch5-polozhenie-shchupa">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-target"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Как верно расположить щуп? Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-shchup-ugol" data-mode="single" data-correct="1">
+              <div class="zb-picks l">
+                <button class="zb-pick" data-i="1">
+                  <img src="assets/probe-45.jpg" alt="Щуп воткнут в центр котлеты под углом 45° между полосками от гриля" loading="lazy">
+                  <span class="zb-pick__name">Под углом 45° в центр, между полосками от гриля <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="2">
+                  <img src="assets/probe-90.jpg" alt="Щуп воткнут в центр котлеты сверху под прямым углом" loading="lazy">
+                  <span class="zb-pick__name">Сверху под прямым углом в центр <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="3">
+                  <img src="assets/probe-side.jpg" alt="Щуп воткнут сбоку котлеты" loading="lazy">
+                  <span class="zb-pick__name">Сбоку котлеты <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+                <button class="zb-pick" data-i="4">
+                  <img src="assets/probe-30.jpg" alt="Щуп воткнут в центр котлеты под углом 30° в полоску от гриля" loading="lazy">
+                  <span class="zb-pick__name">Под углом 30° в полоску от гриля <span class="zb-pick__mark"><svg class="ku-ico s"><use href="#i-ok"/></svg></span></span>
+                </button>
+              </div>
+              <template data-fb-ok><strong>Супер! Ты ответил верно.</strong> Щуп необходимо воткнуть под углом 45° в середину котлеты между полосками от гриля. Это даёт верный результат.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> Щуп необходимо воткнуть под углом 45° в середину котлеты между полосками от гриля. Это даёт верный результат.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-shchup-ugol')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+
+            <div class="zb-zoom" data-zb-zoom-for="q-shchup-ugol" hidden>
+              <div class="ku-space m"></div>
+              <div class="ku-card pad-l">
+                <div class="zb-zoom__label"><svg class="ku-ico s"><use href="#i-ok"/></svg> Разбор: как это выглядит вблизи</div>
+                <div class="ku-space s"></div>
+                <img class="zb-zoom__img" src="assets/probe-45.jpg" alt="Крупный план: щуп введён под 45° в середину котлеты между полосками от гриля" loading="lazy">
+                <div class="ku-space s"></div>
+                <p class="ku-small ku-soft">Обрати внимание: остриё уходит <strong>между</strong> полосками от гриля, а не в полоску, и заходит в самую середину котлеты по толщине.</p>
+              </div>
+            </div>
+
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s5-2">Давай дальше <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 5.2 Секундомер ──────────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-2" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Щуп введён, температура начала расти. Твои действия теперь?</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch5-sekundomer">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-clock"/></svg> Выбери ответ</div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sekundomer" data-mode="single" data-correct="4">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Засечь 5 секунд после того, как температура достигнет 70 ℃, и запомнить максимальное значение</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Засечь 5 секунд сразу после введения щупа и запомнить максимальное значение</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Засечь 10 секунд после того, как температура достигнет 68 ℃, и запомнить максимальное значение</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Засечь 5 секунд после того, как температура достигнет 68 ℃, и запомнить максимальное значение</button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> Как только температура достигает 68 ℃, включай секундомер на 5 секунд. Зафиксируй максимальную температуру за это время.</template>
+              <template data-fb-bad><strong>Неверно!</strong> Отсчёт начинается с момента достижения 68 ℃ — это стандарт, гарантирующий безопасность. Включи секундомер на 5 секунд и зафиксируй максимальную температуру за это время.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sekundomer')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s5-3">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 5.3 Диапазон температур ─────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-3" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Также тебе необходимо знать верный диапазон температуры и ориентироваться на него при замере.</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch5-diapazon">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-target"/></svg> Выбери варианты</div>
+            <p class="ku-small ku-soft">При каких температурах результат замера считается корректным и мясо можно использовать? Верных вариантов несколько.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-diapazon" data-mode="multi" data-correct="2,3">
+              <div class="zb-opts" data-mode="multi">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> 67,9 ℃</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> 68,1 ℃</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> 72,3 ℃</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> 75,4 ℃</button>
+              </div>
+              <template data-fb-ok><strong>Это правильный ответ!</strong> Диапазон допустимой температуры готовой говядины — от 68 ℃ до 75 ℃.</template>
+              <template data-fb-bad><strong>Это неправильный ответ.</strong> Температура ниже 68 ℃ означает, что мясо недожарено, а это риск отравления. Выше 75 ℃ — значит оно пережарено, что влияет на качество готового продукта. В обоих случаях мясо нужно списать.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-diapazon')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s5-4">Дальше <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 5.4 Сценарий 1: перегрев ────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-4" hidden>
+          <div class="ku-space m"></div>
+          <h3 class="ku-h2">Непростые ситуации</h3>
+          <p class="ku-lead">Теперь давай представим несколько непростых ситуаций и найдём для них решения. Для каждого сценария расположи шаги в верной последовательности.</p>
+          <div class="ku-space m"></div>
+
+          <div class="ku-exercise" data-ku-id="ch5-scenariy-1">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-grip"/></svg> Расставь по порядку · Сценарий 1</div>
+            <p class="ku-small ku-soft">Мясо на вид сухое и/или температура выше допустимого значения (75 ℃). Перетащи шаги в верном порядке.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-scen-1">
+              <div class="ku-sortable" id="sort-scen-1" data-correct="0,1,2" data-zb-shuffle>
+                <div class="ku-sort-item" data-idx="0"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Немедленно списать кусок мяса (или всю партию, если замер производился в пик)</div>
+                <div class="ku-sort-item" data-idx="1"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Отрегулировать время приготовления на бройлере в меньшую сторону. Рекомендуемый шаг — 5 секунд</div>
+                <div class="ku-sort-item" data-idx="2"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Произвести повторный замер на новом куске мяса. Если замер был на партии — повторный замер тоже на партии</div>
+              </div>
+              <template data-fb-ok><strong>Верно!</strong> Сначала списываем, потом уменьшаем время приготовления и делаем повторный замер. Процедура мытья инвентаря методом трёх ванн в этом случае не обязательна.</template>
+              <template data-fb-bad><strong>Не совсем.</strong> Подумай: что нужно сделать с небезопасным продуктом в первую очередь и только потом трогать настройки бройлера?</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheckSort('q-scen-1')"><svg class="ku-ico"><use href="#i-check"/></svg> Проверить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s5-5">К сценарию 2 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 5.5 Сценарий 2: недожар ─────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-5" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise" data-ku-id="ch5-scenariy-2">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-grip"/></svg> Расставь по порядку · Сценарий 2</div>
+            <p class="ku-small ku-soft">Мясо на вид сырое и/или температура ниже допустимого значения (68 ℃). Перетащи шаги в верном порядке.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-scen-2">
+              <div class="ku-sortable" id="sort-scen-2" data-correct="0,1,2,3" data-zb-shuffle>
+                <div class="ku-sort-item" data-idx="0"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Немедленно списать кусок мяса (или всю партию, если замер производился в пик)</div>
+                <div class="ku-sort-item" data-idx="1"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Методом трёх ванн вымыть весь инвентарь, который контактировал с этим куском мяса: пены, красные щипцы и т. д.</div>
+                <div class="ku-sort-item" data-idx="2"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Отрегулировать время приготовления на бройлере в большую сторону. Рекомендуемый шаг — 5 секунд</div>
+                <div class="ku-sort-item" data-idx="3"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Произвести повторный замер на новом куске мяса. Если замер был на партии — повторный замер тоже на партии</div>
+              </div>
+              <template data-fb-ok><strong>Верно!</strong> Недожаренное мясо опасно, поэтому после списания обязательно моем весь контактировавший инвентарь методом трёх ванн — и только потом увеличиваем время и делаем повторный замер.</template>
+              <template data-fb-bad><strong>Не совсем.</strong> Здесь появляется шаг, которого не было в первом сценарии. Вспомни, чем сырое мясо опаснее пережаренного и что из-за этого нужно сделать с инвентарём.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheckSort('q-scen-2')"><svg class="ku-ico"><use href="#i-check"/></svg> Проверить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s5-6">Дальше <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 5.6 Сценарий 3: нет ячейки PHU ─────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s5-6" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise" data-ku-id="ch5-scenariy-3">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-utensils"/></svg> Сценарий 3</div>
+            <p class="ku-small ku-soft">Ты провёл замер мяса, а свободной ячейки PHU не оказалось. Что нужно делать? Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-phu" data-mode="single" data-correct="4">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отдать мясо в заказ</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отдать мясо на обед сотруднику</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Списать мясо</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Все варианты верны</button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> Действуй по ситуации на ресторане: сначала посмотри, можешь ли отдать мясо в заказ; если заказов нет — отдай на обед сотруднику; если никто не идёт на обед — тогда спиши мясо.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> Действуй по ситуации на ресторане: сначала посмотри, можешь ли отдать мясо в заказ; если заказов нет — отдай на обед сотруднику; если никто не идёт на обед — тогда спиши мясо.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-phu')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" onclick="kuOpenModal('m-zapomni')"><svg class="ku-ico"><use href="#i-bulb"/></svg> Далее</button>
+            </div>
+          </div>
+
+          <div class="ku-space m"></div>
+          <div class="ku-callout">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-bulb"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Памятка «Запомни!»</div>
+              <p>Пять правил, которые нужно держать в голове на каждом замере. <button class="ku-btn ghost s" onclick="kuOpenModal('m-zapomni')">Открыть</button></p>
+            </div>
+          </div>
+          <div class="zb-actions"><button class="ku-btn primary l" onclick="kuNavigate('ch6')">К бракеражу <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 6 · ЭТАП 5. БРАКЕРАЖ И ЖУРНАЛЫ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch6">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 6 · Этап 5</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Бракераж и журнал замеров</h2>
+        <div class="ku-space m"></div>
+
+        <!-- ── 6.1 Что такое бракераж ─────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s6-1">
+          <div class="ku-prose">
+            <p><strong>Бракераж</strong> — это оценка запаха, вкуса и текстуры. Он нужен, чтобы убедиться: мясо не только безопасно, но и имеет правильные органолептические свойства.</p>
+            <p>Проводится <strong>1 раз в день с утра</strong> или чаще — при возникновении инцидента.</p>
+            <p>После замера температуры с помощью одноразовых приборов разрежь котлету на 3 равные части и оцени запах, вкус и текстуру.</p>
+          </div>
+          <div class="ku-space m"></div>
+          <img class="zb-zoom__img" src="assets/brakerazh.jpg" alt="Котлета разрезана одноразовым прибором на три равные части для бракеража" loading="lazy">
+          <div class="ku-space s"></div>
+          <div class="ku-grid cols-3 gap-s">
+            <div class="ku-card"><div class="ku-icon-badge"><svg class="ku-ico"><use href="#i-search"/></svg></div><div class="ku-space s"></div><strong>Запах</strong><p class="ku-small ku-soft">Характерный, говяжий</p></div>
+            <div class="ku-card"><div class="ku-icon-badge"><svg class="ku-ico"><use href="#i-utensils"/></svg></div><div class="ku-space s"></div><strong>Вкус</strong><p class="ku-small ku-soft">Без посторонних привкусов</p></div>
+            <div class="ku-card"><div class="ku-icon-badge"><svg class="ku-ico"><use href="#i-layers"/></svg></div><div class="ku-space s"></div><strong>Текстура</strong><p class="ku-small ku-soft">Мягкая, сочная</p></div>
+          </div>
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s6-2">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── 6.2 Журналы ─────────────────────────────────────────────── -->
+        <div class="zb-step ku-reveal" id="s6-2" hidden>
+          <div class="ku-space m"></div>
+          <h3 class="ku-h2">Электронные журналы</h3>
+          <div class="ku-space s"></div>
+          <div class="ku-grid cols-2 gap-s">
+            <div class="ku-card">
+              <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-file"/></svg> MD Audit</div>
+              <div class="ku-space s"></div>
+              <p><strong>Журнал замеров «Технологический маршрут»</strong></p>
+              <p class="ku-small ku-soft">Заполняется после каждого замера.</p>
+            </div>
+            <div class="ku-card">
+              <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-file"/></svg> Axapta</div>
+              <div class="ku-space s"></div>
+              <p><strong>Журнал бракеража</strong></p>
+              <p class="ku-small ku-soft">Заполняется 1 раз в день с утра.</p>
+            </div>
+          </div>
+          <div class="ku-space s"></div>
+          <div class="ku-callout info">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-info"/></svg></span>
+            <div><div class="ku-callout__title">Если MD Audit не работает</div><p>Заполняй бумажный журнал. Как это сделать, тебе покажет Наставник.</p></div>
+          </div>
+          <div class="ku-space s"></div>
+          <div class="ku-callout danger">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-alert"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Важно</div>
+              <p>Данные вноси <strong>не позднее 2 часов</strong> после замера. <strong>4 нарушения за 30 дней</strong> считается критическим фактором.</p>
+            </div>
+          </div>
+
+          <div class="ku-space m"></div>
+          <!-- ЗАГЛУШКА ГРАФИКИ: экран журнала -->
+          <div class="ku-img zb-ph" style="aspect-ratio:16/9"
+               data-gen-file="assets/gen/journal.jpg"
+               data-gen-prompt="Горизонтальная иллюстрация 16:9 в плоском векторном стиле, без реального текста (надписи имитируются серыми плашками-полосками): обобщённый экран планшета в защитном чехле, закреплённого на кухне ресторана, с открытой формой электронного журнала замеров температуры. На экране видна таблица из нескольких строк с числовыми полями и одно выделенное поле для ввода температуры, кнопка подтверждения, зелёная галочка статуса. Рядом лежит цифровой термощуп. Нейтральная сине-серая палитра, мягкие тени, без логотипов и без узнаваемого интерфейса реальных продуктов.">
+            <img alt="Экран электронного журнала замеров" onerror="this.removeAttribute('src')" src="assets/gen/journal.jpg">
+            <div class="ku-img__ph">
+              <svg class="ku-ico l"><use href="#i-image"/></svg>
+              <b>Заглушка: assets/gen/journal.jpg</b>
+              <span>Промт для генерации — в атрибуте data-gen-prompt этого блока</span>
+            </div>
+          </div>
+
+          <div class="zb-actions"><button class="ku-btn primary" data-zb-next="s6-3">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+        <!-- ── 6.3 Сортировка: использовать / списать ──────────────────── -->
+        <div class="zb-step ku-reveal" id="s6-3" hidden>
+          <style>
+            /* Широкие чипы-карточки для длинных описаний котлет */
+            .zb-cards { display: flex; flex-direction: column; gap: var(--ku-space-2xs); }
+            .zb-cards .ku-chip {
+              display: block; width: 100%;
+              white-space: normal; text-align: left; line-height: 1.4;
+              background: var(--ku-card); color: var(--ku-text);
+              font-weight: 400; font-size: 0.9rem;
+              border: 1.5px solid var(--ku-border);
+              border-radius: var(--ku-radius-m);
+              padding: 0.7em 0.9em 0.7em 2.2em;
+            }
+            /* точки-«ручка»: подсказывают, что карточку можно тащить */
+            .zb-cards .ku-chip::before {
+              content: ""; position: absolute; left: 0.8em; top: 50%;
+              width: 0.5em; height: 1.1em; transform: translateY(-50%);
+              background-image: radial-gradient(currentColor 1px, transparent 1px);
+              background-size: 0.25em 0.33em;
+              color: var(--ku-text-muted); opacity: 0.85;
+            }
+            .zb-cards .ku-chip { position: relative; }
+            .zb-cards.ku-zone__drop { min-height: 7rem; }
+          </style>
+
+          <div class="ku-space m"></div>
+          <div class="ku-prose"><p>Ты проводишь бракераж. Твоя задача — распределить мясо по двум категориям.</p></div>
+          <div class="ku-space s"></div>
+
+          <div class="ku-exercise" data-ku-id="ch6-brakerazh-sort" data-ku-dnd>
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-move"/></svg> Распредели по корзинам</div>
+            <p class="ku-small ku-soft">Перетащи каждое описание котлеты в нужную корзину. На телефоне — держи палец на карточке и веди её к корзине.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-brakerazh" data-zones="z-use:use|z-off:off">
+              <div class="ku-pool zb-cards" id="pool-brakerazh" data-zb-shuffle>
+                <span class="ku-chip" id="bk1" data-key="use">Запах — характерный, говяжий. Вкус — без посторонних привкусов. Текстура — мягкая, сочная</span>
+                <span class="ku-chip" id="bk2" data-key="off">Запах — кислый, неприятный. Вкус — кислый. Текстура — мягкая</span>
+                <span class="ku-chip" id="bk3" data-key="off">Запах — характерный. Вкус — горький. Текстура — сочная</span>
+                <span class="ku-chip" id="bk4" data-key="off">Запах — характерный. Вкус — характерный. Текстура — сухая, жёсткая, крошится</span>
+                <span class="ku-chip" id="bk5" data-key="off">Запах — запах газа. Вкус — характерный. Текстура — сочная</span>
+                <span class="ku-chip" id="bk6" data-key="off">Запах — характерный. Вкус — сырой, «землистый»</span>
+              </div>
+              <div class="ku-space s"></div>
+              <div class="ku-zones">
+                <div class="ku-zone">
+                  <div class="ku-zone__label"><svg class="ku-ico s"><use href="#i-ok"/></svg> Использовать</div>
+                  <div class="ku-zone__drop zb-cards" id="z-use"></div>
+                </div>
+                <div class="ku-zone">
+                  <div class="ku-zone__label"><svg class="ku-ico s"><use href="#i-no"/></svg> Списать</div>
+                  <div class="ku-zone__drop zb-cards" id="z-off"></div>
+                </div>
+              </div>
+              <template data-fb-ok><strong>Молодец!</strong> Ты верно определил, какие котлеты можно использовать, а какие нужно списать.</template>
+              <template data-fb-bad><strong>Неправильно!</strong> Запомни: любой посторонний запах или вкус, а также сухая текстура — это признак порчи или неправильного приготовления. Такое мясо нельзя использовать, даже если его температура правильная.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheckZones('q-brakerazh')"><svg class="ku-ico"><use href="#i-check"/></svg> Проверить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('ch7')">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 7 · РАБОЧИЕ СИТУАЦИИ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch7">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 7</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Рабочие ситуации</h2>
+        <div class="ku-space m"></div>
+
+        <div class="zb-step ku-reveal" id="s7-0">
+          <div class="ku-callout">
+            <span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-star"/></svg></span>
+            <div>
+              <div class="ku-callout__title">Отлично! Базовые правила освоены</div>
+              <p>Теперь потренируемся на реальных рабочих ситуациях, с которыми ты можешь столкнуться на смене. Это поможет быстро и правильно принимать решения в нестандартных случаях.</p>
+            </div>
+          </div>
+          <div class="zb-actions"><button class="ku-btn primary l" data-zb-next="s7-1">Давай начнём <svg class="ku-ico arrow"><use href="#i-right"/></svg></button></div>
+        </div>
+
+
+        <!-- ── Ситуация 1 · Температура падает ── -->
+        <div class="zb-step ku-reveal" id="s7-1" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-1">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 1 · Температура падает</div>
+            <p class="ku-small">Ты замеряешь мясо, воткнул щуп верно — под углом 45° в центр котлеты между полосками от гриля. Температура дошла до 70 ℃, ты включил секундомер на 5 секунд, но она начала падать. Что ты сделаешь?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Верных вариантов несколько.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-1" data-mode="multi" data-correct="1,3">
+              <div class="zb-opts" data-mode="multi">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Если температура не упала ниже 68 ℃ — продолжаю отсчёт 5 секунд и фиксирую максимальное значение 70 ℃</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> В любом случае спишу мясо и выполню процедуру замера заново, так как падение температуры говорит о его небезопасности</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Если температура упала ниже 68 ℃ — спишу мясо и выполню процедуру замера заново</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Воткну щуп глубже, чтобы получить более точные показания</button>
+              </div>
+              <template data-fb-ok><strong>Это правильный ответ!</strong> Температура достигла 70 ℃ — это уже выше минимальных 68 ℃. Если за 5 секунд температура не опустится ниже 68 ℃, значит мясо можно использовать.</template>
+              <template data-fb-bad><strong>Это неправильный ответ.</strong> Температура достигла 70 ℃ — это уже выше минимальных 68 ℃. Если за 5 секунд температура не опустится ниже 68 ℃, значит мясо можно использовать.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-1')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-2">Ситуация 2 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 2 · Красивая котлета, но 65 ℃ ── -->
+        <div class="zb-step ku-reveal" id="s7-2" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-2">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 2 · Красивая котлета, но 65 ℃</div>
+            <p class="ku-small">Ты замеряешь мясо. Котлета выглядит красивой, прожаренной. Ты воткнул щуп правильно, но температура дошла до 65 ℃ и остановилась либо начала падать. Что ты сделаешь?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-2" data-mode="single" data-correct="1">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Спишу мясо, так как температура ниже 68 ℃, независимо от внешнего вида</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Подожду 10 секунд — возможно, температура ещё поднимется</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Воткну щуп в другое место котлеты, чтобы проверить температуру в другой точке</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отдам мясо на сборку, так как оно выглядит готовым</button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> Температура 65 ℃ — ниже минимального порога безопасности. Внешний вид котлеты не имеет значения: внутри она может быть недостаточно прожаренной для уничтожения опасных бактерий.</template>
+              <template data-fb-bad><strong>Неправильно!</strong> Температура 65 ℃ — ниже минимального порога безопасности. Внешний вид котлеты не имеет значения: внутри она может быть недостаточно прожаренной для уничтожения опасных бактерий.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-2')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-3">Ситуация 3 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 3 · Котлета набрала 76 ℃ ── -->
+        <div class="zb-step ku-reveal" id="s7-3" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-3">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 3 · Котлета набрала 76 ℃</div>
+            <p class="ku-small">Ты замеряешь мясо. Котлета набрала 76 ℃. Что нужно сделать?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-3" data-mode="single" data-correct="1">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Сразу списать мясо, так как температура выше нормы</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Перепроверить замер в другой точке котлеты</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отдать мясо на сборку — 76 ℃ допустимое отклонение</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Уменьшить время приготовления на 5 секунд и сделать повторный замер</button>
+              </div>
+              <template data-fb-ok><strong>Молодец!</strong> 76 ℃ — превышение максимального порога температуры говядины. Такое мясо считается пережаренным и не соответствует стандарту качества Burger King. Верный диапазон температур — 68–75 ℃.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> 76 ℃ — превышение максимального порога температуры говядины. Такое мясо считается пережаренным и не соответствует стандарту качества Burger King. Верный диапазон температур — 68–75 ℃.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-3')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-4">Ситуация 4 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 4 · Пиковый замер: партия не набрала температуру ── -->
+        <div class="zb-step ku-reveal" id="s7-4" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-4">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 4 · Пиковый замер: партия не набрала температуру</div>
+            <p class="ku-small">Ты ставил пиковый замер — загрузил полную партию котлет в бройлер. Замеряешь первую котлету, и она не набрала температуру (ниже 68 ℃). Что нужно сделать?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-4" data-mode="single" data-correct="4">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Списать всю партию и, ничего не меняя, поставить ещё одну</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Взять другой кусок из этой партии и замерить его</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отправить партию в PHU, так как она выглядит готовой</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Списать всю партию, подготовить чистый инвентарь, скорректировать время приготовления</button>
+              </div>
+              <template data-fb-ok><strong>Правильно!</strong> При пиковом замере проверяется способность бройлера справляться с полной нагрузкой. Если даже один кусок в партии не набрал температуру — это сигнал, что оборудование работает неправильно или время выставлено неверно.</template>
+              <template data-fb-bad><strong>Неправильно!</strong> Верный алгоритм — списать всю партию, подготовить чистый инвентарь, скорректировать время приготовления. При пиковом замере проверяется способность бройлера справляться с полной нагрузкой: если даже один кусок в партии не набрал температуру, это сигнал, что оборудование работает неправильно или время выставлено неверно.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-4')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-5">Ситуация 5 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 5 · Пиковый замер: 78 ℃ ── -->
+        <div class="zb-step ku-reveal" id="s7-5" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-5">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 5 · Пиковый замер: 78 ℃</div>
+            <p class="ku-small">Ты замеряешь партию мяса при пиковом замере. Одна котлета набрала 78 ℃ — выше допустимого максимума. Что нужно сделать с партией?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-5" data-mode="single" data-correct="1">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Списать всю партию, так как один кусок пережарен</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Проверить ещё 2–3 куска из этой партии, чтобы понять, вся ли партия пережарена</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Использовать партию, так как пережарен только один кусок</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Отправить партию в PHU, а пережаренный кусок списать</button>
+              </div>
+              <template data-fb-ok><strong>Отлично!</strong> Нельзя использовать такую партию.</template>
+              <template data-fb-bad><strong>Не так!</strong> Нельзя использовать такую партию.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-5')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-6">Ситуация 6 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 6 · Какой кусок брать на замер ── -->
+        <div class="zb-step ku-reveal" id="s7-6" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-6">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 6 · Какой кусок брать на замер</div>
+            <p class="ku-small">Ты ставишь мясо для пикового замера и загружаешь полную партию котлет в бройлер. Какой кусок мяса ты можешь взять на замер?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Один верный вариант.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-6" data-mode="single" data-correct="1">
+              <div class="zb-opts" data-mode="single">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Только первый кусок, который выпал из бройлера</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Только последний кусок из партии</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Любой кусок из этой партии</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Только кусок из центральной части партии</button>
+              </div>
+              <template data-fb-ok><strong>Верно!</strong> При пиковом замере нужно брать первый кусок, который выпал из бройлера.</template>
+              <template data-fb-bad><strong>Неверно!</strong> При пиковом замере нужно брать первый кусок, который выпал из бройлера.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-6')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary" data-zb-next="s7-7">Ситуация 7 <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Ситуация 7 · Коллега забрал котлеты из бройлера ── -->
+        <div class="zb-step ku-reveal" id="s7-7" hidden>
+          <div class="ku-space m"></div>
+          <div class="ku-exercise zb-case" data-ku-id="ch7-sit-7">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-zap"/></svg> Ситуация 7 · Коллега забрал котлеты из бройлера</div>
+            <p class="ku-small">Ты делаешь пиковый замер. Достал один кусок из бройлера и начал замерять его температуру — мясо не набрало нужную температуру (ниже 68 ℃). В это время другой сотрудник, не разобравшись в ситуации, увидел, что у него закончилось мясо, и забрал следующие упавшие котлеты из бройлера, поставив их в PHU. Что тебе нужно сделать?</p>
+            <div class="ku-space s"></div>
+            <p class="ku-small ku-soft">Верных вариантов несколько.</p>
+            <div class="ku-space s"></div>
+
+            <div class="zb-quiz" id="q-sit-7" data-mode="multi" data-correct="3,4">
+              <div class="zb-opts" data-mode="multi">
+                <button class="zb-opt" data-i="1"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Ничего не делать — сотрудник просто помог с работой</button>
+                <button class="zb-opt" data-i="2"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Проверить, какую температуру имеют котлеты в PHU, и при необходимости списать их</button>
+                <button class="zb-opt" data-i="3"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Дать сотруднику обратную связь и объяснить, что при пиковом замере нельзя забирать мясо, пока замер не завершён</button>
+                <button class="zb-opt" data-i="4"><span class="zb-opt__box"><svg class="ku-ico s"><use href="#i-check"/></svg></span> Списать эту партию, подготовить чистый инвентарь, скорректировать время приготовления, поставить новую партию</button>
+              </div>
+              <template data-fb-ok><strong>Молодец!</strong> Ты выбрал верное решение. Нельзя игнорировать ситуацию: мясо может быть небезопасным, а сотрудник не узнает о нарушении и может повторить его снова.</template>
+              <template data-fb-bad><strong>Неправильно!</strong> Нельзя игнорировать ситуацию: мясо может быть небезопасным, а сотрудник не узнает о нарушении и может повторить его снова.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheck('q-sit-7')"><svg class="ku-ico"><use href="#i-check"/></svg> Ответить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('ch8')">Итоговое задание <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ГЛАВА 8 · ИТОГОВОЕ ЗАДАНИЕ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-ch8">
+    <section class="ku-section tight">
+      <div class="ku-wrap measure">
+        <button class="ku-btn ghost" onclick="kuNavigate('home')"><svg class="ku-ico"><use href="#i-home"/></svg> К оглавлению</button>
+        <div class="ku-space m"></div>
+        <span class="ku-eyebrow">Глава 8</span>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Итоговое задание</h2>
+        <div class="ku-space m"></div>
+
+        <div class="zb-step ku-reveal" id="s8-1">
+          <div class="ku-exercise" data-ku-id="ch8-itogovoe">
+            <div class="ku-exercise__label"><svg class="ku-ico s"><use href="#i-award"/></svg> Расставь по порядку</div>
+            <p class="ku-small ku-soft">Расположи шаги процедуры замера температуры говядины в правильном порядке. Перетаскивай карточки.</p>
+            <div class="ku-space s"></div>
+
+            <!-- data-key вместо data-idx: три одинаковых шага «Вымыть руки»
+                 взаимозаменяемы, проверка сравнивает последовательность ключей -->
+            <div class="zb-quiz" id="q-itog" data-sort-keys="ruki,inventar,shchup,ruki,myaso,ruki,vid,zamer,brakerazh,zhurnaly">
+              <div class="ku-sortable" id="sort-itog" data-zb-shuffle>
+                <div class="ku-sort-item" data-key="ruki"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Вымыть руки</div>
+                <div class="ku-sort-item" data-key="inventar"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Подготовить инвентарь</div>
+                <div class="ku-sort-item" data-key="shchup"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Подготовить термощуп к работе</div>
+                <div class="ku-sort-item" data-key="ruki"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Вымыть руки</div>
+                <div class="ku-sort-item" data-key="myaso"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Поставить мясо</div>
+                <div class="ku-sort-item" data-key="ruki"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Вымыть руки</div>
+                <div class="ku-sort-item" data-key="vid"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Оценить внешний вид котлеты</div>
+                <div class="ku-sort-item" data-key="zamer"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Сделать замер температуры по стандарту</div>
+                <div class="ku-sort-item" data-key="brakerazh"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Провести бракераж</div>
+                <div class="ku-sort-item" data-key="zhurnaly"><span class="ku-sort-handle"><svg class="ku-ico"><use href="#i-grip"/></svg></span><span class="ku-sort-item__num">?</span>Завести журналы</div>
+              </div>
+              <template data-fb-ok><strong>Молодец!</strong> Ты выстроил верную последовательность. Ниже — эталон, сделай скриншот.</template>
+              <template data-fb-bad><strong>Не совсем так!</strong> Проверь, где в процедуре руки моются повторно: после подготовки щупа и сразу после контакта с сырым мясом. Ниже — эталон, сделай скриншот.</template>
+            </div>
+
+            <div class="zb-actions">
+              <button class="ku-btn primary s" data-zb-check onclick="zbCheckSort('q-itog')"><svg class="ku-ico"><use href="#i-check"/></svg> Проверить</button>
+              <span class="zb-hint" data-zb-hint></span>
+            </div>
+            <div class="ku-feedback" data-zb-fb></div>
+
+            <!-- Эталон: показывается после ответа, чтобы можно было заскринить -->
+            <div class="zb-zoom" data-zb-zoom-for="q-itog" hidden>
+              <div class="ku-space m"></div>
+              <div class="ku-card pad-l">
+                <div class="zb-zoom__label"><svg class="ku-ico s"><use href="#i-ok"/></svg> Верная последовательность — сделай скриншот</div>
+                <div class="ku-space s"></div>
+                <div class="ku-sortable" style="pointer-events:none">
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">1</span>Вымыть руки</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">2</span>Подготовить инвентарь</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">3</span>Подготовить термощуп к работе</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">4</span>Вымыть руки</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">5</span>Поставить мясо</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">6</span>Вымыть руки</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">7</span>Оценить внешний вид котлеты</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">8</span>Сделать замер температуры по стандарту</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">9</span>Провести бракераж</div>
+                  <div class="ku-sort-item"><span class="ku-sort-item__num">10</span>Завести журналы</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="zb-actions" data-zb-after hidden>
+              <button class="ku-btn primary l" onclick="kuNavigate('finish')">Далее <svg class="ku-ico arrow"><use href="#i-right"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       ФИНАЛ
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="ku-page" id="ku-page-finish">
+    <section class="ku-section">
+      <div class="ku-wrap measure ku-center">
+        <div class="ku-icon-badge solid" style="margin-inline:auto"><svg class="ku-ico"><use href="#i-trophy"/></svg></div>
+        <div class="ku-space s"></div>
+        <h2 class="ku-h1">Поздравляем!</h2>
+        <p class="ku-lead">Ты полностью прошёл процедуру замера температуры говядины. Теперь будешь отрабатывать её на практике на этаже с Наставником.</p>
+        <div class="ku-space m"></div>
+
+        <div class="ku-grid cols-3 gap-s" style="text-align:left">
+          <div class="ku-stat"><div class="ku-stat__icon"><svg class="ku-ico"><use href="#i-target"/></svg></div><div class="ku-stat__num">68–75 ℃</div><div class="ku-stat__label">Верный диапазон</div></div>
+          <div class="ku-stat"><div class="ku-stat__icon"><svg class="ku-ico"><use href="#i-clock"/></svg></div><div class="ku-stat__num">5 сек</div><div class="ku-stat__label">Отсчёт с 68 ℃</div></div>
+          <div class="ku-stat"><div class="ku-stat__icon"><svg class="ku-ico"><use href="#i-file"/></svg></div><div class="ku-stat__num">2 часа</div><div class="ku-stat__label">Срок внесения в журнал</div></div>
+        </div>
+        <div class="ku-space m"></div>
+
+        <div class="ku-row center">
+          <button class="ku-btn soft" onclick="kuOpenModal('m-zapomni')"><svg class="ku-ico"><use href="#i-bulb"/></svg> Памятка «Запомни!»</button>
+          <button class="ku-btn soft" onclick="kuOpenModal('m-pamyatka-zamer')"><svg class="ku-ico"><use href="#i-file"/></svg> Памятка по замеру</button>
+        </div>
+        <div class="ku-space m"></div>
+
+        <h3 class="ku-h3">Сводка прохождения</h3>
+        <div class="ku-space s"></div>
+        <div class="ku-report" data-ku-report="all" style="text-align:left"></div>
+        <div class="ku-space s"></div>
+        <div class="ku-row center">
+          <button class="ku-btn soft" data-ku-report-copy><svg class="ku-ico"><use href="#i-copy"/></svg> Скопировать сводку</button>
+          <button class="ku-btn soft" data-ku-report-download><svg class="ku-ico"><use href="#i-download"/></svg> Скачать .txt</button>
+        </div>
+        <div class="ku-space l"></div>
+
+        <button class="ku-btn primary l" data-ku-complete>
+          <svg class="ku-ico"><use href="#i-check"/></svg> Завершить тренажёр
+        </button>
+        <p class="ku-caption" style="margin-top:0.8em">Кнопка передаёт в LMS статус «Пройден».</p>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<!-- ═════════════════════════════════════════════════════════════════════
+     МОДАЛКИ
+     ═════════════════════════════════════════════════════════════════════ -->
+
+<!-- Требования к оборудованию (всплывает при входе в главу 3) -->
+<div class="ku-modal-overlay" id="m-oborudovanie">
+  <div class="ku-modal zb-modal-wide" role="dialog" aria-modal="true" aria-labelledby="m-oborudovanie-t">
+    <button class="ku-modal__close" data-ku-modal-close aria-label="Закрыть"><svg class="ku-ico"><use href="#i-x"/></svg></button>
+    <div class="ku-icon-badge solid"><svg class="ku-ico"><use href="#i-alert"/></svg></div>
+    <div class="ku-space s"></div>
+    <h3 class="ku-h3" id="m-oborudovanie-t">Сделай скриншот и запомни: требования к оборудованию</h3>
+    <div class="ku-space s"></div>
+    <div class="ku-stack s" style="text-align:left">
+      <div class="zb-rule"><span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-zap"/></svg></span><div><div class="zb-rule__title">300 ℃ ± 20 ℃</div><div class="zb-rule__sub">Допустимое отклонение по температуре бройлера</div></div></div>
+      <div class="zb-rule"><span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-clock"/></svg></span><div><div class="zb-rule__title">± 30 секунд</div><div class="zb-rule__sub">Допустимое отклонение по времени во всех бройлерах и рецептурах приготовления котлет из говядины</div></div></div>
+      <div class="zb-rule"><span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-settings"/></svg></span><div><div class="zb-rule__title">Шаг 5 секунд</div><div class="zb-rule__sub">Рекомендуемый шаг в изменении времени жарки</div></div></div>
+      <div class="zb-rule"><span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-layers"/></svg></span><div><div class="zb-rule__title">Левая сторона — под топовый продукт</div><div class="zb-rule__sub">Настраивается под продукт с наибольшими продажами и не меняется в течение рабочей смены (только у бройлеров NIECO)</div></div></div>
+      <div class="zb-rule"><span class="ku-icon-badge"><svg class="ku-ico"><use href="#i-alert"/></svg></span><div><div class="zb-rule__title">Любое отклонение — заявка в сервисную компанию</div><div class="zb-rule__sub">Не работай на оборудовании, которое вышло за допуск</div></div></div>
+    </div>
+    <div class="ku-space m"></div>
+    <button class="ku-btn primary block" data-ku-modal-close>Продолжаем!</button>
+  </div>
+</div>
+
+<!-- Дисклеймер «Запомни!» после этапа 4 -->
+<div class="ku-modal-overlay" id="m-zapomni">
+  <div class="ku-modal zb-modal-wide" role="dialog" aria-modal="true" aria-labelledby="m-zapomni-t">
+    <button class="ku-modal__close" data-ku-modal-close aria-label="Закрыть"><svg class="ku-ico"><use href="#i-x"/></svg></button>
+    <div class="ku-icon-badge solid"><svg class="ku-ico"><use href="#i-bulb"/></svg></div>
+    <div class="ku-space s"></div>
+    <h3 class="ku-h3" id="m-zapomni-t">Запомни!</h3>
+    <div class="ku-space s"></div>
+    <div class="ku-stack s" style="text-align:left">
+      <div class="ku-callout"><span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-target"/></svg></span><div><p>Верный диапазон температуры говядины — <strong>68 ℃ – 75 ℃</strong>.</p></div></div>
+      <div class="ku-callout"><span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-clock"/></svg></span><div><p>Нажимай на секундомер <strong>только тогда, когда температура достигла 68 ℃</strong>.</p></div></div>
+      <div class="ku-callout"><span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-file"/></svg></span><div><p>Внеси <strong>максимальную температуру</strong>, зафиксированную за 5 секунд, в журнал MD Audit.</p></div></div>
+      <div class="ku-callout"><span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-refresh"/></svg></span><div><p>Если при повторном замере температура всё ещё не соответствует стандарту (68–75 ℃), <strong>повторяй процедуру до достижения нужного результата</strong>.</p></div></div>
+      <div class="ku-callout"><span class="ku-callout__icon"><svg class="ku-ico l"><use href="#i-alert"/></svg></span><div><p>Если в ходе замера была допущена ошибка (нарушена процедура, отключился секундомер или термощуп), <strong>замер считается неверным</strong>. Действуй так же, как при температуре ниже допустимого значения: спиши мясо, вымой инвентарь и проведи замер заново. Корректировка времени не требуется, если визуально мясо выглядит прожаренным.</p></div></div>
+    </div>
+    <div class="ku-space m"></div>
+    <button class="ku-btn primary block" data-ku-modal-close>Далее</button>
+  </div>
+</div>
+
+<!-- Памятка «Мытьё рук» -->
+<div class="ku-modal-overlay" id="m-pamyatka-ruki">
+  <div class="ku-modal zb-modal-wide" role="dialog" aria-modal="true" aria-labelledby="m-ruki-t">
+    <button class="ku-modal__close" data-ku-modal-close aria-label="Закрыть"><svg class="ku-ico"><use href="#i-x"/></svg></button>
+    <h3 class="ku-h3" id="m-ruki-t">Памятка «Мытьё рук»</h3>
+    <div class="ku-space s"></div>
+    <img src="assets/pamyatka-ruki.jpg" alt="Памятка «Мытьё рук»: температура воды 38–55 ℃, шесть шагов мытья, список ситуаций для мытья и дезинфекции, правила при смене станций" style="width:100%;border-radius:var(--ku-radius-m)">
+    <div class="ku-space s"></div>
+    <a class="ku-btn soft block" href="assets/pamyatka-ruki.pdf" target="_blank" rel="noopener"><svg class="ku-ico"><use href="#i-download"/></svg> Открыть PDF</a>
+  </div>
+</div>
+
+<!-- Памятка «Делай замер правильно» -->
+<div class="ku-modal-overlay" id="m-pamyatka-zamer">
+  <div class="ku-modal zb-modal-wide" role="dialog" aria-modal="true" aria-labelledby="m-zamer-t">
+    <button class="ku-modal__close" data-ku-modal-close aria-label="Закрыть"><svg class="ku-ico"><use href="#i-x"/></svg></button>
+    <h3 class="ku-h3" id="m-zamer-t">Памятка «Делай замер температуры говядины правильно»</h3>
+    <div class="ku-space s"></div>
+    <img src="assets/pamyatka-zamer.jpg" alt="Памятка: допустимый диапазон 68–75 ℃, действия при температуре выше и ниже допустимого значения, части бройлеров NIECO и DUKE для закладки мяса" style="width:100%;border-radius:var(--ku-radius-m)">
+  </div>
+</div>
+
+<script src="js/kuds.js"></script>
+<script src="js/ku-scorm.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   МЕХАНИКИ ТРЕНАЖЁРА (префикс zb-)
+   Свой JS поверх ДС: kuds.js даёт drag-and-drop, сортировку, модалки и
+   роутер глав; здесь — проверки с кнопкой «Ответить» и авторскими текстами
+   обратной связи, пошаговое раскрытие блоков и заглушки графики.
+   ════════════════════════════════════════════════════════════════════════ */
+(function () {
+  "use strict";
+
+  /* Заглушка графики: onerror="this.removeAttribute('src')" стоит прямо в
+     разметке — ошибка загрузки происходит РАНЬШЕ, чем выполнится этот скрипт,
+     поэтому вызывать отсюда функцию нельзя. */
+
+  /* ── Карточка-перевёртыш ──────────────────────────────────────────── */
+  window.zbFlip = function (btn) {
+    btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
+  };
+
+  /* ── Пошаговое раскрытие блоков внутри главы ──────────────────────── */
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("[data-zb-next]");
+    if (!btn) return;
+    const next = document.getElementById(btn.getAttribute("data-zb-next"));
+    if (!next) return;
+    next.hidden = false;
+    void next.offsetHeight;              // reflow: браузер фиксирует стартовое
+    next.classList.add("visible");       // состояние, и переход отрисуется
+    next.scrollIntoView({ behavior: "smooth", block: "start" });
+    const row = btn.closest(".zb-actions");
+    if (row) row.hidden = true;
+  });
+
+  /* ── Выбор варианта: подсветка до нажатия «Ответить» ──────────────── */
+  document.addEventListener("click", function (e) {
+    const opt = e.target.closest(".zb-opt, .zb-pick");
+    if (!opt || opt.disabled) return;
+    const quiz = opt.closest(".zb-quiz");
+    if (!quiz || quiz.dataset.locked === "1") return;
+    if (quiz.dataset.mode === "single") {
+      quiz.querySelectorAll(".zb-opt, .zb-pick").forEach(function (o) { o.classList.remove("is-picked"); });
+      opt.classList.add("is-picked");
+    } else {
+      opt.classList.toggle("is-picked");
+    }
+    hint(quiz, "");
+  });
+
+  /* ── Общие части проверки ─────────────────────────────────────────── */
+  function box(quiz) { return quiz.closest("[data-ku-id]") || quiz; }
+  // маркер варианта: галочка у верного, крестик у неверного
+  function mark(opt, href) {
+    const u = opt.querySelector(".zb-opt__box use, .zb-pick__mark use");
+    if (u) u.setAttribute("href", href);
+  }
+  function hint(quiz, text) {
+    const el = box(quiz).querySelector("[data-zb-hint]");
+    if (el) el.textContent = text;
+  }
+  function tpl(quiz, name) {
+    const t = quiz.querySelector("template[data-fb-" + name + "]");
+    return t ? t.innerHTML.trim() : "";
+  }
+  function verdict(quiz, ok) {
+    const wrap = box(quiz);
+    const fb = wrap.querySelector("[data-zb-fb]");
+    if (fb) {
+      // .ku-feedback — flex: ровно два ребёнка, иконка и текст одним узлом
+      fb.className = "ku-feedback show " + (ok ? "correct" : "incorrect");
+      fb.innerHTML = '<svg class="ku-ico l"><use href="#' + (ok ? "i-ok" : "i-alert") + '"/></svg>' +
+                     '<span class="ku-fb-msg">' + tpl(quiz, ok ? "ok" : "bad") + "</span>";
+    }
+    // Кнопку проверки прячем. «Попробовать ещё раз» кладём в нижний ряд —
+    // под разбор ошибки, иначе читается раньше объяснения.
+    const row = wrap.querySelector("[data-zb-after]") || wrap.querySelector(".zb-actions");
+    const check = wrap.querySelector("[data-zb-check]");
+    if (check) check.hidden = true;
+    if (row) {
+      let retry = row.querySelector("[data-zb-retry]");
+      if (!ok && !retry) {
+        retry = document.createElement("button");
+        retry.className = "ku-btn soft s";
+        retry.setAttribute("data-zb-retry", "");
+        retry.innerHTML = '<svg class="ku-ico"><use href="#i-refresh"/></svg> Попробовать ещё раз';
+        retry.addEventListener("click", function () { window.zbRetry(quiz.id); });
+        row.insertBefore(retry, row.firstChild);
+      }
+      if (retry) retry.hidden = ok;
+    }
+    // разбор «крупно» — показываем при любом ответе
+    const zoom = wrap.querySelector('[data-zb-zoom-for="' + quiz.id + '"]');
+    if (zoom) { zoom.hidden = false; zoom.classList.add("ku-reveal", "visible"); }
+    // кнопка перехода дальше
+    const after = wrap.querySelector("[data-zb-after]");
+    if (after) after.hidden = false;
+
+    const id = wrap.getAttribute("data-ku-id");
+    if (id && window.KU) {
+      if (ok) KU.progress.markDone(id);
+      if (KU.lms) KU.lms.interaction(id, quiz.dataset.answer || "", ok ? "correct" : "wrong");
+    }
+    hint(quiz, "");
+  }
+
+  /* ── Тест: один или несколько вариантов + кнопка «Ответить» ───────── */
+  window.zbCheck = function (quizId) {
+    const quiz = document.getElementById(quizId);
+    if (!quiz || quiz.dataset.locked === "1") return;
+    const opts = [].slice.call(quiz.querySelectorAll(".zb-opt, .zb-pick"));
+    const picked = opts.filter(function (o) { return o.classList.contains("is-picked"); });
+    if (!picked.length) { hint(quiz, "Сначала выбери вариант."); return; }
+
+    const correct = quiz.dataset.correct.split(",");
+    const pickedKeys = picked.map(function (o) { return o.dataset.i; });
+    const ok = pickedKeys.length === correct.length &&
+               pickedKeys.every(function (v) { return correct.indexOf(v) !== -1; });
+    const revealAll = quiz.dataset.reveal === "all";
+
+    quiz.dataset.answer = pickedKeys.join(", ");
+    quiz.dataset.locked = "1";
+    opts.forEach(function (o) {
+      o.classList.remove("is-picked");
+      o.disabled = true;
+      const isCorrect = correct.indexOf(o.dataset.i) !== -1;
+      const wasPicked = pickedKeys.indexOf(o.dataset.i) !== -1;
+      // верный ответ — раскрываем всё; ошибка — только выбранное неверное,
+      // чтобы «Попробовать ещё раз» имело смысл (исключение: data-reveal="all")
+      if (isCorrect && (ok || revealAll)) o.classList.add("correct");
+      else if (wasPicked && !isCorrect) o.classList.add("wrong");
+      mark(o, o.classList.contains("wrong") ? "#i-x" : "#i-check");
+    });
+    verdict(quiz, ok);
+  };
+
+  /* ── Сортировка шагов ─────────────────────────────────────────────── */
+  window.zbCheckSort = function (quizId) {
+    const quiz = document.getElementById(quizId);
+    if (!quiz || quiz.dataset.locked === "1") return;
+    const list = quiz.querySelector(".ku-sortable");
+    const items = [].slice.call(list.querySelectorAll(".ku-sort-item"));
+
+    let ok;
+    if (quiz.dataset.sortKeys) {
+      // сравнение по ключам: одинаковые шаги взаимозаменяемы
+      const want = quiz.dataset.sortKeys.split(",");
+      const got = items.map(function (el) { return el.dataset.key; });
+      ok = want.length === got.length && want.every(function (v, i) { return v === got[i]; });
+      quiz.dataset.answer = got.join(" → ");
+    } else {
+      const want = (list.dataset.correct || "").split(",").map(Number);
+      const got = items.map(function (el) { return parseInt(el.dataset.idx, 10); });
+      ok = want.length === got.length && want.every(function (v, i) { return v === got[i]; });
+      quiz.dataset.answer = got.join(",");
+    }
+
+    items.forEach(function (el, i) {
+      const num = el.querySelector(".ku-sort-item__num");
+      if (num) num.textContent = i + 1;
+      el.classList.toggle("correct", ok);
+    });
+    if (ok) { quiz.dataset.locked = "1"; list.style.pointerEvents = "none"; }
+    verdict(quiz, ok);
+  };
+
+  /* ── Распределение по корзинам ────────────────────────────────────── */
+  window.zbCheckZones = function (quizId) {
+    const quiz = document.getElementById(quizId);
+    if (!quiz || quiz.dataset.locked === "1") return;
+    const pool = quiz.querySelector(".ku-pool");
+    if (pool && pool.querySelector(".ku-chip")) {
+      hint(quiz, "Распредели все карточки по корзинам.");
+      return;
+    }
+    const spec = quiz.dataset.zones.split("|");   // "z-use:use|z-off:off"
+    let ok = true;
+    const answer = [];
+    spec.forEach(function (pair) {
+      const parts = pair.split(":");
+      const zone = document.getElementById(parts[0]);
+      const chips = [].slice.call(zone.querySelectorAll(".ku-chip"));
+      chips.forEach(function (c) {
+        const good = c.dataset.key === parts[1];
+        c.classList.toggle("correct", good);
+        c.classList.toggle("wrong", !good);
+        if (!good) ok = false;
+      });
+      answer.push(parts[0] + ": " + chips.length);
+    });
+    quiz.dataset.answer = answer.join("; ");
+    if (ok) { quiz.dataset.locked = "1"; quiz.querySelectorAll(".ku-chip").forEach(function (c) { c.setAttribute("draggable", "false"); }); }
+    verdict(quiz, ok);
+  };
+
+  /* ── Ещё раз ──────────────────────────────────────────────────────── */
+  window.zbRetry = function (quizId) {
+    const quiz = document.getElementById(quizId);
+    if (!quiz) return;
+    quiz.dataset.locked = "";
+    quiz.querySelectorAll(".zb-opt, .zb-pick").forEach(function (o) {
+      o.classList.remove("correct", "wrong", "is-picked");
+      o.disabled = false;
+      mark(o, "#i-check");
+    });
+    quiz.querySelectorAll(".ku-chip").forEach(function (c) { c.classList.remove("correct", "wrong"); });
+    quiz.querySelectorAll(".ku-sort-item").forEach(function (el) {
+      el.classList.remove("correct");
+      const num = el.querySelector(".ku-sort-item__num");
+      if (num) num.textContent = "?";
+    });
+    const wrap = box(quiz);
+    const fb = wrap.querySelector("[data-zb-fb]");
+    if (fb) { fb.className = "ku-feedback"; fb.innerHTML = ""; }
+    const retry = wrap.querySelector("[data-zb-retry]");
+    if (retry) retry.remove();
+    const check = wrap.querySelector("[data-zb-check]");
+    if (check) check.hidden = false;
+    quiz.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  /* ── Перемешать варианты (сценарий: «разместить хаотично») ─────────── */
+  function shuffleAll() {
+    document.querySelectorAll("[data-zb-shuffle]").forEach(function (el) {
+      if (el.dataset.zbShuffled) return;
+      el.dataset.zbShuffled = "1";
+      if (window.kuShuffle) kuShuffle(el);
+    });
+  }
+
+  /* ── Дисклеймер, всплывающий при входе в главу ────────────────────── */
+  function bindEnterModals() {
+    const nav = document.querySelector("[data-ku-course-nav]");
+    if (!nav) return;
+    new MutationObserver(function () {
+      const page = document.querySelector(".ku-page.active[data-zb-modal-on-enter]");
+      if (!page || page.dataset.zbModalShown) return;
+      page.dataset.zbModalShown = "1";
+      window.kuOpenModal(page.getAttribute("data-zb-modal-on-enter"));
+    }).observe(nav, { subtree: true, attributes: true, attributeFilter: ["class"] });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    shuffleAll();
+    bindEnterModals();
+  });
+})();
+</script>
+
+</body>
+</html>

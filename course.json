@@ -1,0 +1,7 @@
+{
+  "identifier": "ku-zamer-govyadiny",
+  "title": "Замер температуры говядины",
+  "audience": "ms",
+  "direction": "produkty",
+  "_comment": "Метаданные курса. identifier и title попадают в imsmanifest.xml при упаковке (tools/scorm_pack.py). Не переименовывать файл."
+}
