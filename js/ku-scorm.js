@@ -287,12 +287,18 @@
 
   /* ══ 6. ЗАВЕРШЕНИЕ — ТОЛЬКО КНОПКОЙ ═════════════════════════════════ */
   function complete() {
+    if (state.completed && !lmsReady) return;   // уже завершено и сессия закрыта
     state.completed = true;
+    save();                        // сначала прогресс (suspend_data)…
     if (lmsReady) {
+      // …потом статус и штатное закрытие попытки. Без LMSFinish и с пустым
+      // cmi.core.exit LMS считает попытку незаконченной и предлагает
+      // «Продолжить» вместо того, чтобы засчитать курс пройденным.
       lmsSet("cmi.core.lesson_status", "completed");
+      lmsSet("cmi.core.exit", "");
       lmsCommit();
+      lmsFinish();
     }
-    save();
     document.querySelectorAll("[data-ku-complete]").forEach((b) => {
       b.classList.add("is-completed");
     });
