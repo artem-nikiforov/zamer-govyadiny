@@ -3,5 +3,13 @@
   "title": "Замер температуры говядины",
   "audience": "ms",
   "direction": "produkty",
-  "_comment": "Метаданные курса. identifier и title попадают в imsmanifest.xml при упаковке (tools/scorm_pack.py). Не переименовывать файл."
+  "_comment": "Метаданные курса. identifier и title попадают в imsmanifest.xml при упаковке (tools/scorm_pack.py). Не переименовывать файл.",
+  "complete_mode": "lms",
+  "scorm_id": "ku-zamer-temperatury-govyadiny",
+  "scorm_ids": {
+    "manifest": "ku-zamer-temperatury-govyadiny-manifest",
+    "organization": "ku-zamer-temperatury-govyadiny-org",
+    "item": "ku-zamer-temperatury-govyadiny_SCO",
+    "resource": "ku-zamer-temperatury-govyadiny_RES"
+  }
 }

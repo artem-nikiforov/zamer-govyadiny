@@ -141,9 +141,11 @@
 .ku-report__value { font-size: 0.98rem; line-height: 1.55; white-space: pre-wrap; }
 .ku-report__empty { margin: 0; color: var(--ku-text-muted); font-size: 0.9rem; }
 
-/* Кнопка «Завершить» после срабатывания */
+/* Кнопка «Завершить» после срабатывания.
+   Кликабельность НЕ снимаем: флаг completed переживает перезагрузку, и с
+   pointer-events:none кнопка при повторном входе превращалась в картинку —
+   студент уже не мог дослать статус в LMS, если прошлая попытка не зачлась. */
 [data-ku-complete].is-completed {
-  pointer-events: none;
   background: var(--ku-success);
   box-shadow: none;
 }
@@ -154,3 +156,19 @@
 .ku-swatch__meta { padding: 0.5em 0.7em; font-size: 0.75rem; background: var(--ku-card); }
 .ku-swatch__meta b { display: block; font-size: 0.8rem; }
 .ku-swatch__meta span { color: var(--ku-text-muted); font-variant-numeric: tabular-nums; }
+
+/* ── Замок обязательного теста (ku-gate.js) ──────────────────────────── */
+.ku-gate-note {
+  display: flex; align-items: center; gap: 0.6em;
+  margin-top: var(--ku-space-s);
+  border-radius: var(--ku-radius-m);
+  padding: 0.85em 1.1em;
+  font-size: 0.92rem; line-height: 1.45;
+  color: var(--ku-text-muted);
+  background: var(--ku-surface-soft, var(--ku-card));
+  box-shadow: inset 0 0 0 1px var(--ku-border-soft);
+}
+.ku-gate-note .ku-ico { flex: none; opacity: 0.7; }
+/* Запертый блок. Отдельный класс, а не [hidden]: у курса может быть
+   своя механика на hidden, её состояние ломать нельзя. */
+.ku-gate-locked { display: none !important; }

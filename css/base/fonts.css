@@ -1,26 +1,18 @@
 /* ════════════════════════════════════════════════════════════════════════
    KU · ШРИФТЫ + ФЛЮИДНЫЙ КОРЕНЬ
    ────────────────────────────────────────────────────────────────────────
-   • Flame — фирменный акцидентный шрифт (заголовки). Полная кириллица.
    • Golos Text — открытый (SIL OFL) шрифт для основного текста, отличная
      кириллица. Оба самохостятся → работает офлайн в любой LMS.
    • Флюидный font-size на <html> (принцип ids): размер плавно интерполируется
      между брейкпоинтами, а все rem-отступы едут за ним.
    ════════════════════════════════════════════════════════════════════════ */
 
-/* — Акцидентный (заголовки) — */
-@font-face {
-  font-family: "Flame";
-  src: url("../../fonts/Flame-Regular.otf") format("opentype");
-  font-weight: 400 600;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Flame";
-  src: url("../../fonts/Flame-Bold.otf") format("opentype");
-  font-weight: 700 900;
-  font-display: swap;
-}
+/* — Акцидентный Flame в пакет не кладётся —
+   Лицензионных .otf у нас нет, а @font-face на отсутствующий файл давал
+   404 в консоли LMS. На вид это ничего не меняло: все курсы идут с
+   data-audience="ms", где tokens/subsections.css всё равно переводит
+   --ku-font-display на Montserrat. Появятся файлы — вернуть блоки сюда
+   и добавить "Flame" первым в --ku-font-display ниже. */
 
 /* — Основной текст БК-базы: Golos Text (переменный вес) — */
 @font-face {
@@ -59,7 +51,7 @@
    Значения по умолчанию (БК-база). Подраздел переопределяет их в
    tokens/subsections.css — так «переодеваются» и шрифты, и цвета разом. */
 :root {
-  --ku-font-display: "Flame", "Golos Text", system-ui, sans-serif;
+  --ku-font-display: "Golos Text", system-ui, sans-serif;
   --ku-font-body:    "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
